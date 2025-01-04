@@ -3,6 +3,18 @@
 ## Overview
 Gox introduces a JSX-like syntax for Go, enabling developers to seamlessly write server-side and client-side components in Go. This tool aims to simplify the process of creating dynamic HTML by combining the power of Go with a declarative syntax similar to JSX, commonly used in JavaScript frameworks.
 
+# Try it now
+
+```bash
+git clone https://github.com/abdheshnayak/gox.git
+cd gox
+go mod tidy
+go run . --src=example/src --dist=example/dist
+cd example
+go run .
+```
+
+
 ## Goals
 Gox allows developers to write HTML-like code using Go syntax, which is then transpiled into Go code. The generated Go code can be utilized to render dynamic and reusable components.
 
