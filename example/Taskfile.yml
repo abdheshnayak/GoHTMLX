@@ -1,0 +1,27 @@
+version: '3'
+
+tasks:
+  build:
+    cmds:
+      - go build -o ./bin/app main.go
+  run:
+    cmds:
+      - task build && ./bin/app
+
+  transpile:
+    dir: ../
+    cmds:
+      - task run
+
+  transpile:watch:
+    dir: ../
+    cmds:
+      - task dev
+
+  run:watch:
+    cmds:
+      - nodemon -e "go" -i "example/src" -q --signal SIGTERM --exec "task run"
+
+  dev:
+    cmds:
+      - task --parallel transpile:watch run:watch
