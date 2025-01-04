@@ -31,7 +31,12 @@ func (t renderElement) Render(w io.Writer) (int, error) {
 			buffer.WriteString(item.(string))
 		case Element:
 			item.(Element).Render(&buffer)
+		case []Element:
+			for _, child := range item.([]Element) {
+				child.Render(&buffer)
+			}
 		default:
+			fmt.Println(item.(string))
 			buffer.WriteString(fmt.Sprintf("%v", item))
 		}
 	}

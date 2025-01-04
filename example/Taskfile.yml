@@ -1,5 +1,7 @@
 version: '3'
 
+silent: true
+
 tasks:
   build:
     cmds:
@@ -13,6 +15,14 @@ tasks:
     cmds:
       - task run
 
+  css:build:
+    cmds:
+      - pnpx tailwindcss -i ./src/input.css -o ./src/output.css
+  css:watch:
+    cmds:
+      - pnpx tailwindcss -i ./src/input.css -o ./src/output.css --watch
+
+
   transpile:watch:
     dir: ../
     cmds:
@@ -24,4 +34,4 @@ tasks:
 
   dev:
     cmds:
-      - task --parallel transpile:watch run:watch
+      - task --parallel transpile:watch run:watch css:watch

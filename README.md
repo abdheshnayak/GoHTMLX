@@ -1,22 +1,32 @@
-# Gox (JSX for Go)
+# Govelte (JSX for Go)
 
 ## Overview
-Gox introduces a JSX-like syntax for Go, enabling developers to seamlessly write server-side and client-side components in Go. This tool aims to simplify the process of creating dynamic HTML by combining the power of Go with a declarative syntax similar to JSX, commonly used in JavaScript frameworks.
+govelte introduces a JSX-like syntax for Go, enabling developers to seamlessly write server-side and client-side components in Go. This tool aims to simplify the process of creating dynamic HTML by combining the power of Go with a declarative syntax similar to JSX, commonly used in JavaScript frameworks.
 
 # Try it now
 
 ```bash
-git clone https://github.com/abdheshnayak/gox.git
-cd gox
+git clone https://github.com/abdheshnayak/govelte.git
+cd govelte
 go mod tidy
 go run . --src=example/src --dist=example/dist
 cd example
 go run .
 ```
 
+### or use `task` to run it
+
+```bash
+git clone https://github.com/abdheshnayak/govelte.git
+cd govelte
+go mod tidy
+cd example
+task dev
+```
+
 
 ## Goals
-Gox allows developers to write HTML-like code using Go syntax, which is then transpiled into Go code. The generated Go code can be utilized to render dynamic and reusable components.
+govelte allows developers to write HTML-like code using Go syntax, which is then transpiled into Go code. The generated Go code can be utilized to render dynamic and reusable components.
 
 ## Example Usage
 Developers can define reusable components with a JSX-like syntax and use them in their Go applications. Below is an example of defining components and rendering them:
@@ -46,11 +56,11 @@ Developers can define reusable components with a JSX-like syntax and use them in
 package main
 
 import (
-    . "github.com/abdheshnayak/gox/pkg/element"
+    . "github.com/abdheshnayak/govelte/pkg/element"
 )
 
 func main() {
-    GreatNWelcome("Hello Developers", "Gox").Render(os.Stdout)
+    GreatNWelcome("Hello Developers", "govelte").Render(os.Stdout)
 }
 
 func Great(attrs Attr) Node {
@@ -82,7 +92,7 @@ When executed, the rendered HTML will look as follows:
         <p>Hello Developers!</p>
     </div>
     <div>
-        <p>Welcome to Gox!</p>
+        <p>Welcome to govelte!</p>
         <button onClick="welcomeOnClick">Thank You</button>
     </div>
 </div>
@@ -94,7 +104,7 @@ When executed, the rendered HTML will look as follows:
 ```
 
 ## How It Works
-1. **Transpilation:** Gox takes JSX-like syntax written in Go and transpiles it into valid Go code.
+1. **Transpilation:** govelte takes JSX-like syntax written in Go and transpiles it into valid Go code.
 2. **Code Replacement:** The transpiler replaces `r.Render` function calls with the generated Go code.
 3. **Dynamic Rendering:** The resulting Go code produces dynamic HTML structures, leveraging Go's capabilities for server-side rendering and component-based architecture.
 
@@ -109,7 +119,7 @@ When executed, the rendered HTML will look as follows:
 - **Enhanced Debugging:** Add tools to visualize the transpilation process.
 - **Broader Compatibility:** Extend support for additional libraries and frameworks.
 
-Gox bridges the gap between Go and JSX-like syntax, providing developers with an intuitive way to build modern web applications with Go.
+govelte bridges the gap between Go and JSX-like syntax, providing developers with an intuitive way to build modern web applications with Go.
 
 
 > Current implementation is not as per above mentioned features but it is working in similar way.

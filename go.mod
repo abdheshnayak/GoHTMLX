@@ -1,4 +1,4 @@
-module github.com/abdheshnayak/gox
+module github.com/abdheshnayak/govelte
 
 go 1.23.4
 

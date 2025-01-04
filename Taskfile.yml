@@ -1,5 +1,7 @@
 version: '3'
 
+silent: true
+
 vars:
   src: example/src
   dist: example/dist
@@ -8,13 +10,13 @@ vars:
 tasks:
   build:
     cmds:
-      - go build -o ./bin/gox main.go
+      - go build -o ./bin/govelte main.go
   run:
     vars:
       src: "{{.src}}"
       dist: "{{.dist}}"
     cmds:
-      - task build && ./bin/gox --src={{.src}} --dist={{.dist}}
+      - task build && ./bin/govelte --src={{.src}} --dist={{.dist}}
   dev:
     cmds:
       - nodemon -e "go,html" -i "example/dist" -q --signal SIGTERM --exec "task run"

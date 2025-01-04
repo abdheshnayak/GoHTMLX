@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 )
 
 func capitalize(s string) string {
@@ -21,31 +22,55 @@ type Html interface {
 }
 
 type htmlc struct {
-	node *html.Node
+	nodes []*html.Node
 }
 
 func (h htmlc) RenderGolangCode() ([]byte, error) {
 	// string writer
 	var buffer strings.Builder
-	b, err := render(h.node)
-	if err != nil {
-		return nil, err
+	bts := [][]byte{}
+
+	for _, n := range h.nodes {
+		b, err := render(n)
+		if err != nil {
+			return nil, err
+		}
+
+		bts = append(bts, b)
+		// buffer.Write(b)
 	}
 
-	buffer.Write(b)
+	buffer.Write(bytes.Join(bts, []byte(",")))
 
 	return []byte(buffer.String()), nil
 }
 
 func NewHtml(htmlCode []byte) (Html, error) {
-	n, err := html.Parse(bytes.NewReader(htmlCode))
+	context := &html.Node{
+		Type:     html.ElementNode,
+		DataAtom: atom.Div,
+		Data:     "div",
+	}
+
+	if bytes.Contains(htmlCode, []byte("<html>")) && bytes.Contains(htmlCode, []byte("</html>")) {
+		context = nil
+	}
+
+	n, err := html.ParseFragment(bytes.NewReader(bytes.Trim(bytes.TrimSpace(htmlCode), "\n")), context)
 	if err != nil {
 		return nil, err
 	}
 
 	return htmlc{
-		node: n,
+		nodes: n,
 	}, nil
+}
+
+func trimString(s string) string {
+	return strings.Trim(strings.TrimSpace(s), "\n")
+}
+func trimBytes(b []byte) []byte {
+	return bytes.Trim(bytes.TrimSpace(b), "\n")
 }
 
 func transformString(template string) string {
@@ -62,14 +87,23 @@ func transformString(template string) string {
 	for i, part := range parts {
 		if i > 0 {
 			// For each match, add the variable name (e.g., "name")
-			result = append(result, fmt.Sprintf("%s", matches[i-1][1]))
+			result = append(result, fmt.Sprintf("%s", trimString(matches[i-1][1])))
 		}
+
+		if trimString(part) == "" {
+			continue
+		}
+
 		// Add the literal part (e.g., "hello ")
-		result = append(result, fmt.Sprintf("`%s`", part))
+		result = append(result, fmt.Sprintf("`%s`", trimString(part)))
+	}
+
+	if len(result) == 0 {
+		return ""
 	}
 
 	// Join the parts with commas
-	return fmt.Sprintf("R(%s)", strings.Join(result, ", "))
+	return fmt.Sprintf("R(%s)", trimString(strings.Join(result, ", ")))
 }
 
 func render(n *html.Node) ([]byte, error) {
@@ -77,7 +111,7 @@ func render(n *html.Node) ([]byte, error) {
 
 	switch n.Type {
 	case html.TextNode:
-		buffer.WriteString(transformString(n.Data))
+		buffer.WriteString(transformString(strings.TrimSpace(n.Data)))
 
 	// case html.CommentNode:
 	// 	buffer.WriteString("<!--")
@@ -92,7 +126,7 @@ func render(n *html.Node) ([]byte, error) {
 			buffer.WriteString(fmt.Sprintf("%s(", capitalize(n.Data)))
 		} else {
 			buffer.WriteString("E(`")
-			buffer.WriteString(n.Data)
+			buffer.WriteString(strings.TrimSpace(n.Data))
 			buffer.WriteString("`,")
 		}
 
@@ -114,6 +148,11 @@ func render(n *html.Node) ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
+
+			if len(b) == 0 {
+				continue
+			}
+
 			childs = append(childs, string(b))
 		}
 		buffer.WriteString(strings.Join(childs, ","))
@@ -126,6 +165,11 @@ func render(n *html.Node) ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
+
+			if len(b) == 0 {
+				continue
+			}
+
 			childs = append(childs, string(b))
 			// buffer.Write(b)
 		}
