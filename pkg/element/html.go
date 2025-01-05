@@ -73,37 +73,59 @@ func trimBytes(b []byte) []byte {
 	return bytes.Trim(bytes.TrimSpace(b), "\n")
 }
 
-func transformString(template string) string {
-	// Compile the regular expression to match {variable}
-	// re := regexp.MustCompile(`\{([^\{\}]+(?:\{[^\{\}]*\}[^\{\}]*)*)\}`)
+func processNode(input string) string {
+	// Regular expression to match {item} or {{item}}
+	input = strings.TrimSpace(input)
+	varPattern := regexp.MustCompile(`\{{2,}(.*)\}{2,}`)
+	tokens := []string{}
 
-	re := regexp.MustCompile(`\{(.*)\}`)
+	// Split the input string into parts based on variable patterns
+	splitParts := varPattern.Split(input, -1)
+	matches := varPattern.FindAllStringSubmatch(input, -1)
 
-	// Find all matches and replace them with the appropriate format
-	parts := re.Split(template, -1)
-	matches := re.FindAllStringSubmatch(template, -1)
-
-	var result []string
-	for i, part := range parts {
-		if i > 0 {
-			// For each match, add the variable name (e.g., "name")
-			result = append(result, fmt.Sprintf("%s", trimString(matches[i-1][1])))
+	// Iterate over the split parts and matches to construct the result
+	for i, part := range splitParts {
+		if strings.TrimSpace(part) != "" {
+			tokens = append(tokens, processNodePart(part))
 		}
-
-		if trimString(part) == "" {
-			continue
+		if i < len(matches) {
+			match := matches[i]
+			tokens = append(tokens, fmt.Sprintf("`%s`", match[0]))
 		}
-
-		// Add the literal part (e.g., "hello ")
-		result = append(result, fmt.Sprintf("`%s`", trimString(part)))
 	}
 
-	if len(result) == 0 {
-		return ""
+	// Join tokens to form the final R(...) string
+	result := fmt.Sprintf("R(%s)", strings.Join(tokens, ", "))
+	return result
+}
+
+func processNodePart(input string) string {
+	// Regular expression to match {item} or {{item}}
+	varPattern := regexp.MustCompile(`\{(.*)\}`)
+	tokens := []string{}
+
+	// Split the input string into parts based on variable patterns
+	splitParts := varPattern.Split(input, -1)
+	matches := varPattern.FindAllStringSubmatch(input, -1)
+
+	// Iterate over the split parts and matches to construct the result
+	for i, part := range splitParts {
+		if strings.TrimSpace(part) != "" {
+			tokens = append(tokens, fmt.Sprintf("`%s`", part))
+		}
+		if i < len(matches) {
+			match := matches[i]
+			if strings.HasPrefix(match[0], "{") && strings.HasSuffix(match[0], "}") {
+				tokens = append(tokens, fmt.Sprintf("%s", match[1]))
+			} else {
+				tokens = append(tokens, match[0])
+			}
+		}
 	}
 
-	// Join the parts with commas
-	return fmt.Sprintf("R(%s)", trimString(strings.Join(result, ", ")))
+	// Join tokens to form the final R(...) string
+	result := fmt.Sprintf("R(%s)", strings.Join(tokens, ", "))
+	return result
 }
 
 func render(n *html.Node, comps map[string]string) ([]byte, error) {
@@ -111,7 +133,7 @@ func render(n *html.Node, comps map[string]string) ([]byte, error) {
 
 	switch n.Type {
 	case html.TextNode:
-		buffer.WriteString(transformString(strings.TrimSpace(n.Data)))
+		buffer.WriteString(processNode(strings.TrimSpace(n.Data)))
 
 	// case html.CommentNode:
 	// 	buffer.WriteString("<!--")
@@ -147,7 +169,7 @@ func render(n *html.Node, comps map[string]string) ([]byte, error) {
 		if n.Data == "script" {
 			// childs = append(childs, "E(``)")
 
-      buffer.WriteString("R(`")
+			buffer.WriteString("R(`")
 			for c := n.FirstChild; c != nil; c = c.NextSibling {
 				buffer.WriteString(c.Data)
 			}

@@ -43,7 +43,7 @@ func Run(src, dist string) error {
 	}
 
 	// Parse the template
-	tmpl, err := template.New("sections").Delims("<!-- {{", "}} -->").Parse(string(input))
+	tmpl, err := template.New("sections").Delims("<!-- {{-", "}} -->").Parse(string(input))
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,6 @@ func Run(src, dist string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(name, ":", string(out))
 
 		goCodes[strings.ToLower(name)] = out
 	}

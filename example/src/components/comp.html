@@ -1,31 +1,36 @@
+<!-- {{- define "HomeScript" }} -->
+<script>
+const { createApp, ref, reactive } = Vue
+
+createApp({
+  setup() {
+    const searchText = ref('')
+    return {
+      searchText,
+    }
+  }
+}).mount('#app')
+</script>
+<!-- {{- end }} -->
+
+---
+
 <!-- {{- define "Home" }} -->
-<Root>
+<Root id="app">
   <Layout>
     <form class="flex flex-col gap-6" hx-post="/search" hx-target="#search-results" hx-swap="innerHTML">
       <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" />
 
-      <InputComp name={name} placeholder="Search ok" ></Inputcomp>
-      <!-- <div id="app">{{ message }}</div> -->
+      <InputComp v-model="searchText" name={name} placeholder="Search Here" ></Inputcomp>
+
+      <div>{{ searchText? "Search for" : "" }} {{ searchText }}</div>
 
       <button class="bg-blue-500 text-white px-4 py-2 rounded-md" type="submit">Search</button>
 
       <div id="search-results" class="flex flex-col gap-6 transition-all">
         <NoResult></NoResult>
       </div>
-
     </form>
-    <script>
-    const { createApp, ref } = Vue
-
-    createApp({
-      setup() {
-        const message = ref('Hello vue!')
-        return {
-          message
-        }
-      }
-    }).mount('#app')
-    </script>
   </Layout>
 </Root>
 <!-- {{- end }} -->
@@ -34,8 +39,8 @@
 
 <!-- {{- define "InputComp" }} -->
 <div class="border rounded-md flex items-center gap-3 justify-between px-3">
-  <input class="p-2 bg-transparent flex-1 outline-none" type="text" name={name} placeholder={placeholder} />
-  <button hx-get="/no-result" hx-target="#search-results" class="p-2 bg-transparent outline-none">
+  <input v-model={vmodel} class="p-2 bg-transparent flex-1 outline-none" type="text" name={name} placeholder={placeholder} />
+  <button type="button" hx-get="/no-result" hx-target="#search-results" class="p-2 bg-transparent outline-none">
     <i data-lucide="x"></i>
   </button>
 </div>
@@ -92,12 +97,11 @@
     <link rel="stylesheet" href="/output.css" />
     <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.js" integrity="sha384-oeUn82QNXPuVkGCkcrInrS1twIxKhkZiFfr2TdiuObZ3n3yIeMiqcRzkIcguaof1" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/lucide@latest" async="true" onload="lucide.createIcons()"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.cjs.prod.min.js" integrity="sha512-EtvYJJwXchpRS4eLnZXsO0zuS2Oa4VieUFie49quEVCy1ZH2Eyu9eFzazy6Hav4Uct6Ji1FReS1sEMUaP3TtRw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    <script src="/output.js" async="true"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   </head>
-  <body class="bg-slate-900 text-slate-50 p-3">
+  <body class="bg-slate-900 text-slate-50 p-3" id={id}>
     {children}
+  <HomeScript></HomeScript>
   </body>
 </html>
 <!-- {{- end }} -->

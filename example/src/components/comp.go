@@ -13,8 +13,9 @@ func Home() Element {
 func InputComp(vals Attr, _ ...Element) Element {
 	name := vals["name"]
 	placeholder := vals["placeholder"]
+	vmodel := vals["v-model"]
 
-	return RenderE("inputcomp", name, placeholder)
+	return RenderE("inputcomp", name, placeholder, vmodel)
 }
 
 func Layout(vals Attr, children ...Element) Element {
@@ -22,7 +23,9 @@ func Layout(vals Attr, children ...Element) Element {
 }
 
 func Root(vals Attr, children ...Element) Element {
-	return RenderE("root", children)
+	id := vals["id"]
+
+	return RenderE("root", children, id)
 }
 
 func Search() Element {
@@ -35,4 +38,8 @@ func SearchCard(vals Attr, _ ...Element) Element {
 
 func NoResult(vals Attr, _ ...Element) Element {
 	return RenderE("NoResult")
+}
+
+func HomeScript(vals Attr, _ ...Element) Element {
+	return RenderE("HomeScript")
 }
