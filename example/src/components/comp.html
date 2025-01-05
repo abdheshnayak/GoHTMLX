@@ -1,10 +1,12 @@
-{{- define "home" }}
+<!-- {{- define "Home" }} -->
 <Root>
   <Layout>
     <form class="flex flex-col gap-6" hx-post="/search" hx-target="#search-results" hx-swap="innerHTML">
       <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" />
 
-      <InputComp name={name} placeholder="Search Here" ></Inputcomp>
+      <InputComp name={name} placeholder="Search ok" ></Inputcomp>
+      <!-- <div id="app">{{ message }}</div> -->
+
       <button class="bg-blue-500 text-white px-4 py-2 rounded-md" type="submit">Search</button>
 
       <div id="search-results" class="flex flex-col gap-6 transition-all">
@@ -12,13 +14,25 @@
       </div>
 
     </form>
+    <script>
+    const { createApp, ref } = Vue
+
+    createApp({
+      setup() {
+        const message = ref('Hello vue!')
+        return {
+          message
+        }
+      }
+    }).mount('#app')
+    </script>
   </Layout>
 </Root>
-{{- end }}
+<!-- {{- end }} -->
 
 ---
 
-{{- define "inputcomp" }}
+<!-- {{- define "InputComp" }} -->
 <div class="border rounded-md flex items-center gap-3 justify-between px-3">
   <input class="p-2 bg-transparent flex-1 outline-none" type="text" name={name} placeholder={placeholder} />
   <button hx-get="/no-result" hx-target="#search-results" class="p-2 bg-transparent outline-none">
@@ -26,19 +40,19 @@
   </button>
 </div>
 
-{{- end }}
+<!-- {{- end }} -->
 
 ---
 
-{{- define "SearchCard" }}
+<!-- {{- define "SearchCard" }} -->
 <div class="h-24 border">
   this is search results
 </div>
-{{- end }}
+<!-- {{- end }} -->
 
 ---
 
-{{- define "SearchResult" }}
+<!-- {{- define "SearchResult" }} -->
 <div class="flex flex-col gap-6">
   <h1 class="text-2xl font-bold">Search Results</h1>
   <div class="grid grid-cols-2 gap-3">
@@ -49,38 +63,41 @@
   </div>
 </div>
 
-{{- end }}
+<!-- {{- end }} -->
 
 ---
 
-{{- define "NoResult" }}
+<!-- {{- define "NoResult" }} -->
 <div class="flex flex-col gap-6 items-center">
   <h1 class="text-2xl font-bold">Search Results</h1>
   <div>
     No results found
   </div>
 </div>
-{{- end }}
+<!-- {{- end }} -->
 
 ---
 
-{{- define "layout" }}
+<!-- {{- define "Layout" }} -->
 <div class="h-screen w-screen flex flex-col items-center justify-center">
   {children}
 </div>
-{{- end }}
+<!-- {{- end }} -->
 
 ---
 
-{{- define "root" }}
+<!-- {{- define "Root" }} -->
 <html>
   <head>
     <link rel="stylesheet" href="/output.css" />
     <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.js" integrity="sha384-oeUn82QNXPuVkGCkcrInrS1twIxKhkZiFfr2TdiuObZ3n3yIeMiqcRzkIcguaof1" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/lucide@latest" async="true" onload="lucide.createIcons()"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.cjs.prod.min.js" integrity="sha512-EtvYJJwXchpRS4eLnZXsO0zuS2Oa4VieUFie49quEVCy1ZH2Eyu9eFzazy6Hav4Uct6Ji1FReS1sEMUaP3TtRw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="/output.js" async="true"></script>
   </head>
   <body class="bg-slate-900 text-slate-50 p-3">
     {children}
   </body>
 </html>
-{{- end }}
+<!-- {{- end }} -->

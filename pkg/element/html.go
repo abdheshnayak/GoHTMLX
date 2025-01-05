@@ -18,20 +18,20 @@ func capitalize(s string) string {
 }
 
 type Html interface {
-	RenderGolangCode() ([]byte, error)
+	RenderGolangCode(comps map[string]string) ([]byte, error)
 }
 
 type htmlc struct {
 	nodes []*html.Node
 }
 
-func (h htmlc) RenderGolangCode() ([]byte, error) {
+func (h htmlc) RenderGolangCode(comps map[string]string) ([]byte, error) {
 	// string writer
 	var buffer strings.Builder
 	bts := [][]byte{}
 
 	for _, n := range h.nodes {
-		b, err := render(n)
+		b, err := render(n, comps)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +106,7 @@ func transformString(template string) string {
 	return fmt.Sprintf("R(%s)", trimString(strings.Join(result, ", ")))
 }
 
-func render(n *html.Node) ([]byte, error) {
+func render(n *html.Node, comps map[string]string) ([]byte, error) {
 	var buffer strings.Builder
 
 	switch n.Type {
@@ -122,8 +122,9 @@ func render(n *html.Node) ([]byte, error) {
 	// 	buffer.WriteString(n.Data)
 	// 	buffer.WriteString(">")
 	case html.ElementNode:
+
 		if !isStandard(n.Data) {
-			buffer.WriteString(fmt.Sprintf("%s(", capitalize(n.Data)))
+			buffer.WriteString(fmt.Sprintf("%s(", comps[trimString(n.Data)]))
 		} else {
 			buffer.WriteString("E(`")
 			buffer.WriteString(strings.TrimSpace(n.Data))
@@ -143,25 +144,38 @@ func render(n *html.Node) ([]byte, error) {
 		}
 		buffer.WriteString("},")
 		childs := []string{}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			b, err := render(c)
-			if err != nil {
-				return nil, err
+		if n.Data == "script" {
+			// childs = append(childs, "E(``)")
+
+      buffer.WriteString("R(`")
+			for c := n.FirstChild; c != nil; c = c.NextSibling {
+				buffer.WriteString(c.Data)
 			}
 
-			if len(b) == 0 {
-				continue
+			buffer.WriteString("`))")
+		} else {
+			for c := n.FirstChild; c != nil; c = c.NextSibling {
+				b, err := render(c, comps)
+				if err != nil {
+					return nil, err
+				}
+
+				if len(b) == 0 {
+					continue
+				}
+
+				childs = append(childs, string(b))
 			}
 
-			childs = append(childs, string(b))
+			buffer.WriteString(strings.Join(childs, ","))
+			buffer.WriteString(")")
 		}
-		buffer.WriteString(strings.Join(childs, ","))
-		buffer.WriteString(")")
 
 	case html.DocumentNode:
+
 		childs := []string{}
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			b, err := render(c)
+			b, err := render(c, comps)
 			if err != nil {
 				return nil, err
 			}

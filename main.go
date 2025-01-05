@@ -43,7 +43,7 @@ func Run(src, dist string) error {
 	}
 
 	// Parse the template
-	tmpl, err := template.New("sections").Parse(string(input))
+	tmpl, err := template.New("sections").Delims("<!-- {{", "}} -->").Parse(string(input))
 	if err != nil {
 		return err
 	}
@@ -71,18 +71,25 @@ func Run(src, dist string) error {
 
 	goCodes := map[string][]byte{}
 
+	components := map[string]string{}
+	for k := range sections {
+		components[strings.ToLower(k)] = k
+	}
+
 	// Output the parsed map
 	for name, content := range sections {
 		h, err := element.NewHtml([]byte(content))
 		if err != nil {
 			return err
 		}
-		out, err := h.RenderGolangCode()
+
+		out, err := h.RenderGolangCode(components)
 		if err != nil {
 			return err
 		}
+		fmt.Println(name, ":", string(out))
 
-		goCodes[name] = out
+		goCodes[strings.ToLower(name)] = out
 	}
 
 	s, err := utils.GetPaths(src, ".go")

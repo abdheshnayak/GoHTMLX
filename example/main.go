@@ -82,7 +82,7 @@ func invokeExport(module string) (element.Element, error) {
 	case "search":
 		return goveltepages.Search(), nil
 	case "no-result":
-		return goveltepages.Noresult(element.Attr{}), nil
+		return goveltepages.NoResult(element.Attr{}), nil
 	default:
 		return nil, fmt.Errorf("module %s not found", module)
 	}

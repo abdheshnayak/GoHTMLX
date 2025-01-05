@@ -5,12 +5,12 @@ import (
 )
 
 func Home() Element {
-	name := "hello"
+	name := "hi"
 
 	return RenderE("home", name)
 }
 
-func Inputcomp(vals Attr, _ ...Element) Element {
+func InputComp(vals Attr, _ ...Element) Element {
 	name := vals["name"]
 	placeholder := vals["placeholder"]
 
@@ -29,10 +29,10 @@ func Search() Element {
 	return RenderE("SearchResult")
 }
 
-func Searchcard(vals Attr, _ ...Element) Element {
+func SearchCard(vals Attr, _ ...Element) Element {
 	return RenderE("SearchCard")
 }
 
-func Noresult(vals Attr, _ ...Element) Element {
+func NoResult(vals Attr, _ ...Element) Element {
 	return RenderE("NoResult")
 }

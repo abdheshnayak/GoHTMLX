@@ -43,11 +43,12 @@ func ReplaceRenderE(input []byte, codes map[string][]byte) ([]byte, error) {
 				if !ok {
 					return true
 				}
+
 				if comp.Kind != token.STRING {
 					return true
 				}
 
-				code, ok := codes[strings.Trim(comp.Value, `"`)]
+				code, ok := codes[strings.Trim(strings.ToLower(comp.Value), `"`)]
 				if !ok {
 					slog.Warn("No code found for", slog.String("key", strings.Trim(comp.Value, `"`)))
 					return true
