@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"time"
 
-	goveltepages "github.com/abdheshnayak/govelte/example/dist/components"
-	"github.com/abdheshnayak/govelte/pkg/element"
+	gohtmlxpages "github.com/abdheshnayak/gohtmlx/example/dist/components"
+	"github.com/abdheshnayak/gohtmlx/pkg/element"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -14,8 +15,9 @@ func main() {
 		DisableStartupMessage: true,
 	})
 
-	app.Static("/", "./src", fiber.Static{
-		Compress: true,
+	app.Static("/", "./dist/static", fiber.Static{
+		Compress:      true,
+		CacheDuration: time.Microsecond,
 	})
 
 	// Route to handle dynamic exports
@@ -78,11 +80,11 @@ func main() {
 func invokeExport(module string) (element.Element, error) {
 	switch module {
 	case "home":
-		return goveltepages.Home(), nil
+		return gohtmlxpages.Home(), nil
 	case "search":
-		return goveltepages.Search(), nil
+		return gohtmlxpages.Search(), nil
 	case "no-result":
-		return goveltepages.Noresult(element.Attr{}), nil
+		return gohtmlxpages.NoResult(element.Attrs{}), nil
 	default:
 		return nil, fmt.Errorf("module %s not found", module)
 	}

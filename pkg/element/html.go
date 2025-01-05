@@ -18,20 +18,20 @@ func capitalize(s string) string {
 }
 
 type Html interface {
-	RenderGolangCode() ([]byte, error)
+	RenderGolangCode(comps map[string]string) ([]byte, error)
 }
 
 type htmlc struct {
 	nodes []*html.Node
 }
 
-func (h htmlc) RenderGolangCode() ([]byte, error) {
+func (h htmlc) RenderGolangCode(comps map[string]string) ([]byte, error) {
 	// string writer
 	var buffer strings.Builder
 	bts := [][]byte{}
 
 	for _, n := range h.nodes {
-		b, err := render(n)
+		b, err := render(n, comps)
 		if err != nil {
 			return nil, err
 		}
@@ -73,45 +73,67 @@ func trimBytes(b []byte) []byte {
 	return bytes.Trim(bytes.TrimSpace(b), "\n")
 }
 
-func transformString(template string) string {
-	// Compile the regular expression to match {variable}
-	// re := regexp.MustCompile(`\{([^\{\}]+(?:\{[^\{\}]*\}[^\{\}]*)*)\}`)
+func processNode(input string) string {
+	// Regular expression to match {item} or {{item}}
+	input = strings.TrimSpace(input)
+	varPattern := regexp.MustCompile(`\{{2,}(.*)\}{2,}`)
+	tokens := []string{}
 
-	re := regexp.MustCompile(`\{(.*)\}`)
+	// Split the input string into parts based on variable patterns
+	splitParts := varPattern.Split(input, -1)
+	matches := varPattern.FindAllStringSubmatch(input, -1)
 
-	// Find all matches and replace them with the appropriate format
-	parts := re.Split(template, -1)
-	matches := re.FindAllStringSubmatch(template, -1)
-
-	var result []string
-	for i, part := range parts {
-		if i > 0 {
-			// For each match, add the variable name (e.g., "name")
-			result = append(result, fmt.Sprintf("%s", trimString(matches[i-1][1])))
+	// Iterate over the split parts and matches to construct the result
+	for i, part := range splitParts {
+		if strings.TrimSpace(part) != "" {
+			tokens = append(tokens, processNodePart(part))
 		}
-
-		if trimString(part) == "" {
-			continue
+		if i < len(matches) {
+			match := matches[i]
+			tokens = append(tokens, fmt.Sprintf("`%s`", match[0]))
 		}
-
-		// Add the literal part (e.g., "hello ")
-		result = append(result, fmt.Sprintf("`%s`", trimString(part)))
 	}
 
-	if len(result) == 0 {
-		return ""
-	}
-
-	// Join the parts with commas
-	return fmt.Sprintf("R(%s)", trimString(strings.Join(result, ", ")))
+	// Join tokens to form the final R(...) string
+	result := fmt.Sprintf("R(%s)", strings.Join(tokens, ", "))
+	return result
 }
 
-func render(n *html.Node) ([]byte, error) {
+func processNodePart(input string) string {
+	// Regular expression to match {item} or {{item}}
+	varPattern := regexp.MustCompile(`\{(.*)\}`)
+	tokens := []string{}
+
+	// Split the input string into parts based on variable patterns
+	splitParts := varPattern.Split(input, -1)
+	matches := varPattern.FindAllStringSubmatch(input, -1)
+
+	// Iterate over the split parts and matches to construct the result
+	for i, part := range splitParts {
+		if strings.TrimSpace(part) != "" {
+			tokens = append(tokens, fmt.Sprintf("`%s`", part))
+		}
+		if i < len(matches) {
+			match := matches[i]
+			if strings.HasPrefix(match[0], "{") && strings.HasSuffix(match[0], "}") {
+				tokens = append(tokens, fmt.Sprintf("%s", match[1]))
+			} else {
+				tokens = append(tokens, match[0])
+			}
+		}
+	}
+
+	// Join tokens to form the final R(...) string
+	result := fmt.Sprintf("R(%s)", strings.Join(tokens, ", "))
+	return result
+}
+
+func render(n *html.Node, comps map[string]string) ([]byte, error) {
 	var buffer strings.Builder
 
 	switch n.Type {
 	case html.TextNode:
-		buffer.WriteString(transformString(strings.TrimSpace(n.Data)))
+		buffer.WriteString(processNode(strings.TrimSpace(n.Data)))
 
 	// case html.CommentNode:
 	// 	buffer.WriteString("<!--")
@@ -122,15 +144,16 @@ func render(n *html.Node) ([]byte, error) {
 	// 	buffer.WriteString(n.Data)
 	// 	buffer.WriteString(">")
 	case html.ElementNode:
+
 		if !isStandard(n.Data) {
-			buffer.WriteString(fmt.Sprintf("%s(", capitalize(n.Data)))
+			buffer.WriteString(fmt.Sprintf("%s(", comps[trimString(n.Data)]))
 		} else {
 			buffer.WriteString("E(`")
 			buffer.WriteString(strings.TrimSpace(n.Data))
 			buffer.WriteString("`,")
 		}
 
-		buffer.WriteString("Attr{")
+		buffer.WriteString("Attrs{")
 		for _, a := range n.Attr {
 			buffer.WriteString(fmt.Sprintf("`%s`:", a.Key))
 			// like {data} then remove {}
@@ -143,25 +166,38 @@ func render(n *html.Node) ([]byte, error) {
 		}
 		buffer.WriteString("},")
 		childs := []string{}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			b, err := render(c)
-			if err != nil {
-				return nil, err
+		if n.Data == "script" {
+			// childs = append(childs, "E(``)")
+
+			buffer.WriteString("R(`")
+			for c := n.FirstChild; c != nil; c = c.NextSibling {
+				buffer.WriteString(c.Data)
 			}
 
-			if len(b) == 0 {
-				continue
+			buffer.WriteString("`))")
+		} else {
+			for c := n.FirstChild; c != nil; c = c.NextSibling {
+				b, err := render(c, comps)
+				if err != nil {
+					return nil, err
+				}
+
+				if len(b) == 0 {
+					continue
+				}
+
+				childs = append(childs, string(b))
 			}
 
-			childs = append(childs, string(b))
+			buffer.WriteString(strings.Join(childs, ","))
+			buffer.WriteString(")")
 		}
-		buffer.WriteString(strings.Join(childs, ","))
-		buffer.WriteString(")")
 
 	case html.DocumentNode:
+
 		childs := []string{}
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			b, err := render(c)
+			b, err := render(c, comps)
 			if err != nil {
 				return nil, err
 			}

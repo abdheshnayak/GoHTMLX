@@ -1,13 +1,14 @@
-# Govelte (JSX for Go)
+# GoHTMLX (HTML Components with Go)
 
 ## Overview
-govelte introduces a JSX-like syntax for Go, enabling developers to seamlessly write server-side and client-side components in Go. This tool aims to simplify the process of creating dynamic HTML by combining the power of Go with a declarative syntax similar to JSX, commonly used in JavaScript frameworks.
 
-# Try it now
+gohtmlx enables developers to define and render reusable HTML components using Go. This tool is designed for scenarios where basic HTML rendering is needed or for writing purely server-side components. It simplifies creating dynamic HTML by allowing developers to define components in HTML and use them in Go code. Unlike React or JSX, gohtmlx focuses on server-side rendering and is not intended for building client-side interactive applications.
+
+## Try it now
 
 ```bash
-git clone https://github.com/abdheshnayak/govelte.git
-cd govelte
+git clone https://github.com/abdheshnayak/gohtmlx.git
+cd gohtmlx
 go mod tidy
 go run . --src=example/src --dist=example/dist
 cd example
@@ -17,50 +18,59 @@ go run .
 ### or use `task` to run it
 
 ```bash
-git clone https://github.com/abdheshnayak/govelte.git
-cd govelte
+git clone https://github.com/abdheshnayak/gohtmlx.git
+cd gohtmlx
 go mod tidy
 cd example
 task dev
 ```
 
-
 ## Goals
-govelte allows developers to write HTML-like code using Go syntax, which is then transpiled into Go code. The generated Go code can be utilized to render dynamic and reusable components.
+
+gohtmlx allows developers to write reusable HTML components, which are then transpiled into Go code. The generated Go code can be utilized to render dynamic and reusable server-side components efficiently. The focus is on providing a simple way to create server-rendered HTML with a declarative and reusable approach.
 
 ## Example Usage
-Developers can define reusable components with a JSX-like syntax and use them in their Go applications. Below is an example of defining components and rendering them:
+
+Developers can define reusable components in HTML and use them in their Go applications. Below is an example of defining components and rendering them:
 
 ### Defining Components
-```jsx
-{{- define "Great" }}
+
+```html
+<!-- {{- define "Great" }} -->
 <div>
     <p>Hello {name}!</p>
 </div>
+<!-- {{- end }} -->
 
-{{- define "Welcome" }}
+---
+
+<!-- {{- define "Welcome" }} -->
 <div>
     <p>Welcome to {name}!</p>
-    <button onClick={onClick}>Thank You</button>
 </div>
+<!-- {{- end }} -->
 
-{{- define "GreatNWelcome" }}
+---
+
+<!-- {{- define "GreatNWelcome" }} -->
 <div>
     <Great name={name} />
     <Welcome projectName={projectName} />
 </div>
+<!-- {{- end }} -->
 ```
 
 ### Using Components in Go
+
 ```go
 package main
 
 import (
-    . "github.com/abdheshnayak/govelte/pkg/element"
+    . "github.com/abdheshnayak/gohtmlx/pkg/element"
 )
 
 func main() {
-    GreatNWelcome("Hello Developers", "govelte").Render(os.Stdout)
+    GreatNWelcome("Hello Developers", "gohtmlx").Render(os.Stdout)
 }
 
 func Great(attrs Attr) Node {
@@ -70,11 +80,6 @@ func Great(attrs Attr) Node {
 
 func Welcome(attrs Attr) Node {
     projectName := attrs["projectName"]
-
-    onClick := func(e Event) {
-        fmt.Println("Thank You")
-    }
-
     return RenderE("Welcome", projectName)
 }
 
@@ -84,6 +89,7 @@ func GreatNWelcome(name, projectName string) Node {
 ```
 
 ### Rendered HTML
+
 When executed, the rendered HTML will look as follows:
 
 ```html
@@ -92,34 +98,55 @@ When executed, the rendered HTML will look as follows:
         <p>Hello Developers!</p>
     </div>
     <div>
-        <p>Welcome to govelte!</p>
-        <button onClick="welcomeOnClick">Thank You</button>
+        <p>Welcome to gohtmlx!</p>
     </div>
 </div>
-<script>
-    function welcomeOnClick() {
-        console.log("Thank You");
-    }
-</script>
 ```
 
+## Usage
+
+### Installation
+
+To install gohtmlx, you can use the following command:
+
+```bash
+go install github.com/abdheshnayak/gohtmlx@latest
+```
+
+### Transpilation
+
+To use gohtmlx, you can run the following command:
+
+```bash
+gohtmlx --src=path/to/src --dist=path/to/dist
+```
+
+This command will transpile HTML components from the `src` directory and generate Go code in the `dist` directory.
+
+### Options
+
+- `--src`: Specifies the directory containing the source files to be transpiled.
+- `--dist`: Specifies the directory where the transpiled Go code will be generated.
+
 ## How It Works
-1. **Transpilation:** govelte takes JSX-like syntax written in Go and transpiles it into valid Go code.
-2. **Code Replacement:** The transpiler replaces `r.Render` function calls with the generated Go code.
+
+1. **Transpilation:** gohtmlx takes HTML components defined with placeholders and transpiles them into valid Go code.
+2. **Code Replacement:** The transpiler replaces placeholders and `Render` function calls with the generated Go code.
 3. **Dynamic Rendering:** The resulting Go code produces dynamic HTML structures, leveraging Go's capabilities for server-side rendering and component-based architecture.
 
 ## Benefits
+
 - **Declarative Syntax:** Write HTML-like structures in a readable and reusable manner.
-- **Component Reusability:** Define and reuse components efficiently.
-- **Seamless Integration:** Combines Go’s performance and JSX’s readability.
-- **Dynamic HTML:** Simplifies the creation of dynamic and interactive web content.
+- **Component Reusability:** Define and reuse server-side components efficiently.
+- **Seamless Integration:** Combines Go’s performance and HTML's clarity.
+- **Dynamic HTML:** Simplifies the creation of dynamic server-side web content.
 
 ## Future Enhancements
+
 - **Improved Error Handling:** Provide detailed errors during transpilation.
 - **Enhanced Debugging:** Add tools to visualize the transpilation process.
 - **Broader Compatibility:** Extend support for additional libraries and frameworks.
 
-govelte bridges the gap between Go and JSX-like syntax, providing developers with an intuitive way to build modern web applications with Go.
+---
 
-
-> Current implementation is not as per above mentioned features but it is working in similar way.
+gohtmlx bridges the gap between Go and reusable HTML components, providing developers with an intuitive way to build modern, server-rendered web applications using Go. The examples and usage reflect its ability to simplify server-side HTML generation for projects requiring basic and efficient rendering.

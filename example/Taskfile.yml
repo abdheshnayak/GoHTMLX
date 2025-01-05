@@ -17,10 +17,10 @@ tasks:
 
   css:build:
     cmds:
-      - pnpx tailwindcss -i ./src/input.css -o ./src/output.css
+      - tailwindcss -i ./src/input.css -o ./dist/static/src/main.css
   css:watch:
     cmds:
-      - pnpx tailwindcss -i ./src/input.css -o ./src/output.css --watch
+      - tailwindcss -i ./src/input.css -o ./dist/static/main.css --watch
 
 
   transpile:watch:

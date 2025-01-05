@@ -25,7 +25,7 @@ func ReplaceRenderE(input []byte, codes map[string][]byte) ([]byte, error) {
 		// get pkg name
 		pkg, ok := n.(*ast.File)
 		if ok {
-			pkg.Name.Name = fmt.Sprintf("govelte%s", pkg.Name.Name)
+			pkg.Name.Name = fmt.Sprintf("gohtmlx%s", pkg.Name.Name)
 		}
 
 		// Check if it's a function call
@@ -43,11 +43,12 @@ func ReplaceRenderE(input []byte, codes map[string][]byte) ([]byte, error) {
 				if !ok {
 					return true
 				}
+
 				if comp.Kind != token.STRING {
 					return true
 				}
 
-				code, ok := codes[strings.Trim(comp.Value, `"`)]
+				code, ok := codes[strings.Trim(strings.ToLower(comp.Value), `"`)]
 				if !ok {
 					slog.Warn("No code found for", slog.String("key", strings.Trim(comp.Value, `"`)))
 					return true
@@ -63,7 +64,12 @@ func ReplaceRenderE(input []byte, codes map[string][]byte) ([]byte, error) {
 					return true
 				}
 
+				k := *call
+
+				k.Fun.(*ast.Ident).Name = "Re"
+
 				*call = *(ce)
+				call.Args = append(call.Args, &k)
 			}
 		}
 		return true

@@ -3,10 +3,25 @@ package element
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"strings"
 )
 
-type Attr map[string]any
+type Attrs map[string]any
+
+func GetAttr[T any](attrs Attrs, key string) *T {
+	if val, ok := attrs[key]; ok {
+		resp, ok := val.(T)
+		if ok {
+			return &resp
+		}
+		slog.Error(fmt.Sprintf("value for %s is not of type %T", key, val))
+	}
+
+	slog.Error(fmt.Sprintf("key %s not found", key))
+	return nil
+}
+
 type Event any
 
 type Element interface {
@@ -15,8 +30,9 @@ type Element interface {
 
 type element struct {
 	tag      string
-	attrs    Attr
 	children []Element
+
+	attrs Attrs
 }
 
 type renderElement struct {
@@ -58,10 +74,14 @@ func E(tag string, attrs map[string]any, children ...Element) Element {
 	}
 }
 
-func RenderE(element string, props ...interface{}) Element {
+func Re(element string, props ...interface{}) Element {
 	return renderElement{
 		items: []interface{}{},
 	}
+}
+
+func RenderE(element string, props ...interface{}) Element {
+	return Re(element, props...)
 }
 
 func (e element) Render(w io.Writer) (int, error) {
@@ -72,7 +92,86 @@ func (e element) Render(w io.Writer) (int, error) {
 		buffer.WriteString(" ")
 		buffer.WriteString(k)
 		buffer.WriteString("=\"")
-		buffer.WriteString(fmt.Sprintf("%v", v))
+
+		switch v.(type) {
+		case string:
+			buffer.WriteString(v.(string))
+		case []byte:
+			buffer.WriteString(string(v.([]byte)))
+		case int:
+			buffer.WriteString(fmt.Sprintf("%d", v.(int)))
+		case float64:
+			buffer.WriteString(fmt.Sprintf("%f", v.(float64)))
+		case bool:
+			buffer.WriteString(fmt.Sprintf("%t", v.(bool)))
+		case []string:
+			for _, child := range v.([]string) {
+				buffer.WriteString(child)
+			}
+		case [][]byte:
+			for _, child := range v.([][]byte) {
+				buffer.WriteString(string(child))
+			}
+		case []int:
+			for _, child := range v.([]int) {
+				buffer.WriteString(fmt.Sprintf("%d", child))
+			}
+		case []float64:
+			for _, child := range v.([]float64) {
+				buffer.WriteString(fmt.Sprintf("%f", child))
+			}
+		case []bool:
+			for _, child := range v.([]bool) {
+				buffer.WriteString(fmt.Sprintf("%t", child))
+			}
+		case Element:
+			v.(Element).Render(&buffer)
+		case []Element:
+			for _, child := range v.([]Element) {
+				child.Render(&buffer)
+			}
+		case *string:
+			buffer.WriteString(fmt.Sprintf("%s", *v.(*string)))
+		case *[]byte:
+			buffer.WriteString(fmt.Sprintf("%s", *v.(*[]byte)))
+		case *int:
+			buffer.WriteString(fmt.Sprintf("%d", *v.(*int)))
+		case *float64:
+			buffer.WriteString(fmt.Sprintf("%f", *v.(*float64)))
+		case *bool:
+			buffer.WriteString(fmt.Sprintf("%t", *v.(*bool)))
+		case *Element:
+			(*v.(*Element)).Render(&buffer)
+		case *[]Element:
+			for _, child := range *v.(*[]Element) {
+				child.Render(&buffer)
+			}
+		case *[]string:
+			for _, child := range *v.(*[]string) {
+				buffer.WriteString(child)
+			}
+		case *[][]byte:
+			for _, child := range *v.(*[][]byte) {
+				buffer.WriteString(string(child))
+			}
+		case *[]int:
+			for _, child := range *v.(*[]int) {
+				buffer.WriteString(fmt.Sprintf("%d", child))
+			}
+		case *[]float64:
+			for _, child := range *v.(*[]float64) {
+				buffer.WriteString(fmt.Sprintf("%f", child))
+			}
+		case *[]bool:
+			for _, child := range *v.(*[]bool) {
+				buffer.WriteString(fmt.Sprintf("%t", child))
+			}
+
+		default:
+			fmt.Printf("Unknown type: %T\n", v)
+			buffer.WriteString(fmt.Sprintf("%v", v))
+		}
+
 		buffer.WriteString("\"")
 	}
 	buffer.WriteString(">")

@@ -1,3 +1,4 @@
 example/dist
 bin
 node_modules
+*.fiber.gz
