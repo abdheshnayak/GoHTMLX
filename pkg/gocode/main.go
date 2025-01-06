@@ -13,6 +13,8 @@ import (
 
 // ReplaceRenderE replaces RenderE function calls with the relevant code block
 func ReplaceRenderE(input []byte, codes map[string][]byte) ([]byte, error) {
+	wrap := false
+
 	// Parse the Go code into an AST
 	fs := token.NewFileSet()
 	node, err := parser.ParseFile(fs, "", input, parser.ParseComments)
@@ -54,8 +56,9 @@ func ReplaceRenderE(input []byte, codes map[string][]byte) ([]byte, error) {
 					return true
 				}
 
-				e, err := parser.ParseExpr(string(code))
+				e, err := parser.ParseExpr(fmt.Sprintf("R(%s)", string(code)))
 				if err != nil {
+					fmt.Println("code:", string(code), ":code")
 					fmt.Println("Error:", err)
 					return true
 				}
@@ -64,12 +67,13 @@ func ReplaceRenderE(input []byte, codes map[string][]byte) ([]byte, error) {
 					return true
 				}
 
-				k := *call
-
-				k.Fun.(*ast.Ident).Name = "Re"
+				if wrap {
+					k := *call
+					k.Fun.(*ast.Ident).Name = "Re"
+					ce.Args = append(ce.Args, &k)
+				}
 
 				*call = *(ce)
-				call.Args = append(call.Args, &k)
 			}
 		}
 		return true

@@ -4,8 +4,8 @@ go 1.23.4
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.6
-	github.com/s-kozlov/goback v0.0.0-20150302055225-6e210305bfc9
 	golang.org/x/net v0.33.0
+	sigs.k8s.io/yaml v1.4.0
 )
 
 require (

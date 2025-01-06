@@ -29,8 +29,8 @@ type Element interface {
 }
 
 type element struct {
-	tag      string
-	children []Element
+	tag       string
+	childrens []Element
 
 	attrs Attrs
 }
@@ -66,11 +66,17 @@ func R(items ...interface{}) Element {
 	}
 }
 
-func E(tag string, attrs map[string]any, children ...Element) Element {
+type renderComp struct {
+	name      string
+	props     interface{}
+	childrens []Element
+}
+
+func E(tag string, attrs Attrs, childrens ...Element) Element {
 	return element{
-		tag:      tag,
-		attrs:    attrs,
-		children: children,
+		tag:       tag,
+		attrs:     attrs,
+		childrens: childrens,
 	}
 }
 
@@ -96,77 +102,14 @@ func (e element) Render(w io.Writer) (int, error) {
 		switch v.(type) {
 		case string:
 			buffer.WriteString(v.(string))
-		case []byte:
-			buffer.WriteString(string(v.([]byte)))
-		case int:
-			buffer.WriteString(fmt.Sprintf("%d", v.(int)))
-		case float64:
-			buffer.WriteString(fmt.Sprintf("%f", v.(float64)))
-		case bool:
-			buffer.WriteString(fmt.Sprintf("%t", v.(bool)))
-		case []string:
-			for _, child := range v.([]string) {
-				buffer.WriteString(child)
-			}
-		case [][]byte:
-			for _, child := range v.([][]byte) {
-				buffer.WriteString(string(child))
-			}
-		case []int:
-			for _, child := range v.([]int) {
-				buffer.WriteString(fmt.Sprintf("%d", child))
-			}
-		case []float64:
-			for _, child := range v.([]float64) {
-				buffer.WriteString(fmt.Sprintf("%f", child))
-			}
-		case []bool:
-			for _, child := range v.([]bool) {
-				buffer.WriteString(fmt.Sprintf("%t", child))
-			}
+		case *string:
+			buffer.WriteString(fmt.Sprintf("%s", *v.(*string)))
 		case Element:
 			v.(Element).Render(&buffer)
 		case []Element:
 			for _, child := range v.([]Element) {
 				child.Render(&buffer)
 			}
-		case *string:
-			buffer.WriteString(fmt.Sprintf("%s", *v.(*string)))
-		case *[]byte:
-			buffer.WriteString(fmt.Sprintf("%s", *v.(*[]byte)))
-		case *int:
-			buffer.WriteString(fmt.Sprintf("%d", *v.(*int)))
-		case *float64:
-			buffer.WriteString(fmt.Sprintf("%f", *v.(*float64)))
-		case *bool:
-			buffer.WriteString(fmt.Sprintf("%t", *v.(*bool)))
-		case *Element:
-			(*v.(*Element)).Render(&buffer)
-		case *[]Element:
-			for _, child := range *v.(*[]Element) {
-				child.Render(&buffer)
-			}
-		case *[]string:
-			for _, child := range *v.(*[]string) {
-				buffer.WriteString(child)
-			}
-		case *[][]byte:
-			for _, child := range *v.(*[][]byte) {
-				buffer.WriteString(string(child))
-			}
-		case *[]int:
-			for _, child := range *v.(*[]int) {
-				buffer.WriteString(fmt.Sprintf("%d", child))
-			}
-		case *[]float64:
-			for _, child := range *v.(*[]float64) {
-				buffer.WriteString(fmt.Sprintf("%f", child))
-			}
-		case *[]bool:
-			for _, child := range *v.(*[]bool) {
-				buffer.WriteString(fmt.Sprintf("%t", child))
-			}
-
 		default:
 			fmt.Printf("Unknown type: %T\n", v)
 			buffer.WriteString(fmt.Sprintf("%v", v))
@@ -174,8 +117,9 @@ func (e element) Render(w io.Writer) (int, error) {
 
 		buffer.WriteString("\"")
 	}
+
 	buffer.WriteString(">")
-	for _, child := range e.children {
+	for _, child := range e.childrens {
 		child.Render(&buffer)
 	}
 	buffer.WriteString("</")

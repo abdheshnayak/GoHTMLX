@@ -1,4 +1,5 @@
-<!-- {{- define "HomeScript" }} -->
+<!-- {{- define "HomeScript" -}} -->
+<!-- {{+ define "html" }} -->
 <script>
 const { createApp, ref, reactive } = Vue
 
@@ -11,17 +12,24 @@ createApp({
   }
 }).mount('#app')
 </script>
-<!-- {{- end }} -->
+<!-- {{+ end }} -->
+<!-- {{- end -}} -->
 
 ---
 
 <!-- {{- define "Home" }} -->
-<Root id="app">
+<!-- {{+ define "props" }} -->
+id: string
+name: string
+<!-- {{+ end }} -->
+
+<!-- {{+ define "html" }} -->
+<Root id={props.Id}>
   <Layout>
     <form class="flex flex-col gap-6" hx-post="/search" hx-target="#search-results" hx-swap="innerHTML">
       <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" />
 
-      <InputComp v-model="searchText" name={name} placeholder="Search Here" ></Inputcomp>
+      <InputComp vmodel="searchText" name={props.Name} placeholder="Search Here" ></Inputcomp>
 
       <div>{{ searchText? "Search for" : "" }} {{ searchText }}</div>
 
@@ -33,31 +41,44 @@ createApp({
     </form>
   </Layout>
 </Root>
+<!-- {{+ end }} -->
+
 <!-- {{- end }} -->
 
 ---
 
 <!-- {{- define "InputComp" }} -->
+<!-- {{+ define "props" }} -->
+vmodel: string
+name: string
+placeholder: string
+<!-- {{+ end }} -->
+
+<!-- {{+ define "html" }} -->
 <div class="border rounded-md flex items-center gap-3 justify-between px-3">
-  <input v-model={vmodel} class="p-2 bg-transparent flex-1 outline-none" type="text" name={name} placeholder={placeholder} />
+  <input v-model={props.Vmodel} class="p-2 bg-transparent flex-1 outline-none" type="text" name={props.Name} placeholder={props.Placeholder} />
   <button type="button" hx-get="/no-result" hx-target="#search-results" class="p-2 bg-transparent outline-none">
     <i data-lucide="x"></i>
   </button>
 </div>
 
+<!-- {{+ end }} -->
 <!-- {{- end }} -->
 
 ---
 
 <!-- {{- define "SearchCard" }} -->
+<!-- {{+ define "html" }} -->
 <div class="h-24 border">
   this is search results
 </div>
+<!-- {{+ end }} -->
 <!-- {{- end }} -->
 
 ---
 
 <!-- {{- define "SearchResult" }} -->
+<!-- {{+ define "html" }} -->
 <div class="flex flex-col gap-6">
   <h1 class="text-2xl font-bold">Search Results</h1>
   <div class="grid grid-cols-2 gap-3">
@@ -68,30 +89,45 @@ createApp({
   </div>
 </div>
 
+<!-- {{+ end }} -->
 <!-- {{- end }} -->
 
 ---
 
 <!-- {{- define "NoResult" }} -->
+<!-- {{+ define "html" }} -->
 <div class="flex flex-col gap-6 items-center">
   <h1 class="text-2xl font-bold">Search Results</h1>
   <div>
     No results found
   </div>
 </div>
+<!-- {{+ end }} -->
 <!-- {{- end }} -->
 
 ---
 
 <!-- {{- define "Layout" }} -->
+
+<!-- {{+ define "props" }} -->
+id: string
+<!-- {{+ end }} -->
+
+<!-- {{+ define "html" }} -->
 <div class="h-screen w-screen flex flex-col items-center justify-center">
   {children}
 </div>
+<!-- {{+ end }} -->
 <!-- {{- end }} -->
 
 ---
 
 <!-- {{- define "Root" }} -->
+<!-- {{+ define "props" }} -->
+id: string
+<!-- {{+ end }} -->
+
+<!-- {{+ define "html" }} -->
 <html>
   <head>
     <link rel="stylesheet" href="/main.css" />
@@ -99,9 +135,10 @@ createApp({
     <script src="https://unpkg.com/lucide@latest" async="true" onload="lucide.createIcons()"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   </head>
-  <body class="bg-slate-900 text-slate-50 p-3" id={id}>
+  <body class="bg-slate-900 text-slate-50 p-3" id={props.Id}>
     {children}
-  <HomeScript></HomeScript>
+    <HomeScript></HomeScript>
   </body>
 </html>
+<!-- {{+ end }} -->
 <!-- {{- end }} -->

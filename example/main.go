@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"time"
 
-	gohtmlxpages "github.com/abdheshnayak/gohtmlx/example/dist/components"
+	"github.com/abdheshnayak/gohtmlx/example/src/comps"
 	"github.com/abdheshnayak/gohtmlx/pkg/element"
 	"github.com/gofiber/fiber/v2"
 )
@@ -80,11 +80,11 @@ func main() {
 func invokeExport(module string) (element.Element, error) {
 	switch module {
 	case "home":
-		return gohtmlxpages.Home(), nil
+		return comps.Home(), nil
 	case "search":
-		return gohtmlxpages.Search(), nil
+		return comps.Search(), nil
 	case "no-result":
-		return gohtmlxpages.NoResult(element.Attrs{}), nil
+		return comps.NoResult(), nil
 	default:
 		return nil, fmt.Errorf("module %s not found", module)
 	}

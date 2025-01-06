@@ -10,7 +10,7 @@ vars:
 tasks:
   build:
     cmds:
-      - go build -o ./bin/gohtmlx main.go
+      - go build -o ./bin/gohtmlx .
   run:
     vars:
       src: "{{.src}}"
