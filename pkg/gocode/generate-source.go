@@ -56,6 +56,11 @@ func ConstructSource(codes map[string]string, structs []string, imports []string
 
 		builder.WriteString(fmt.Sprintf("return %s\n", v))
 		builder.WriteString("\n}\n\n")
+
+		builder.WriteString(fmt.Sprintf("func (c %sProps) Get(children ...Element) Element {\n", k))
+
+		builder.WriteString(fmt.Sprintf("return %s(c, children...)\n", k))
+		builder.WriteString("}\n\n")
 	}
 
 	b, err := format.Source([]byte(builder.String()))

@@ -1,19 +1,43 @@
-<!-- {{- define "HomeScript" -}} -->
-<!-- {{+ define "html" }} -->
-<script>
-const { createApp, ref, reactive } = Vue
+<!-- {{* define "imports" }} -->
+"strings"
+<!-- {{* end }} -->
 
-createApp({
-  setup() {
-    const searchText = ref('')
-    return {
-      searchText,
-    }
-  }
-}).mount('#app')
-</script>
+---
+
+<!-- {{- define "Root" }} -->
+<!-- {{+ define "props" }} -->
+id: string
 <!-- {{+ end }} -->
-<!-- {{- end -}} -->
+
+<!-- {{+ define "html" }} -->
+<html>
+  <head>
+    <link rel="stylesheet" href="/main.css" />
+    <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.js" integrity="sha384-oeUn82QNXPuVkGCkcrInrS1twIxKhkZiFfr2TdiuObZ3n3yIeMiqcRzkIcguaof1" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/lucide@latest" async="true" onload="lucide.createIcons()"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  </head>
+  <body class="bg-slate-900 text-slate-50 p-3" id={props.Id}>
+    {children}
+    <HomeScript></HomeScript>
+  </body>
+</html>
+<!-- {{+ end }} -->
+<!-- {{- end }} -->
+
+---
+
+<!-- {{- define "Layout" }} -->
+<!-- {{+ define "props" }} -->
+id: string
+<!-- {{+ end }} -->
+
+<!-- {{+ define "html" }} -->
+<div class="h-screen w-screen flex flex-col items-center justify-center">
+  {children}
+</div>
+<!-- {{+ end }} -->
+<!-- {{- end }} -->
 
 ---
 
@@ -70,7 +94,8 @@ placeholder: string
 <!-- {{- define "SearchCard" }} -->
 <!-- {{+ define "html" }} -->
 <div class="h-24 border">
-  this is search results
+  this is search results 
+  {func() string { return strings.Join([]string{"1", "2", "3"}, ",") }()}
 </div>
 <!-- {{+ end }} -->
 <!-- {{- end }} -->
@@ -107,38 +132,19 @@ placeholder: string
 
 ---
 
-<!-- {{- define "Layout" }} -->
-
-<!-- {{+ define "props" }} -->
-id: string
-<!-- {{+ end }} -->
-
+<!-- {{- define "HomeScript" -}} -->
 <!-- {{+ define "html" }} -->
-<div class="h-screen w-screen flex flex-col items-center justify-center">
-  {children}
-</div>
-<!-- {{+ end }} -->
-<!-- {{- end }} -->
+<script>
+const { createApp, ref, reactive } = Vue
 
----
-
-<!-- {{- define "Root" }} -->
-<!-- {{+ define "props" }} -->
-id: string
+createApp({
+  setup() {
+    const searchText = ref('')
+    return {
+      searchText,
+    }
+  }
+}).mount('#app')
+</script>
 <!-- {{+ end }} -->
-
-<!-- {{+ define "html" }} -->
-<html>
-  <head>
-    <link rel="stylesheet" href="/main.css" />
-    <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.js" integrity="sha384-oeUn82QNXPuVkGCkcrInrS1twIxKhkZiFfr2TdiuObZ3n3yIeMiqcRzkIcguaof1" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/lucide@latest" async="true" onload="lucide.createIcons()"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  </head>
-  <body class="bg-slate-900 text-slate-50 p-3" id={props.Id}>
-    {children}
-    <HomeScript></HomeScript>
-  </body>
-</html>
-<!-- {{+ end }} -->
-<!-- {{- end }} -->
+<!-- {{- end -}} -->

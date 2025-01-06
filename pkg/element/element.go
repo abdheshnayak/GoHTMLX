@@ -45,6 +45,26 @@ func (t renderElement) Render(w io.Writer) (int, error) {
 	var buffer strings.Builder
 	for _, item := range t.items {
 		switch item.(type) {
+		case int:
+			buffer.WriteString(fmt.Sprintf("%d", item.(int)))
+		case float64:
+			buffer.WriteString(fmt.Sprintf("%f", item.(float64)))
+		case bool:
+			buffer.WriteString(fmt.Sprintf("%t", item.(bool)))
+		case *string:
+			buffer.WriteString(fmt.Sprintf("%s", *item.(*string)))
+		case *int:
+			buffer.WriteString(fmt.Sprintf("%d", *item.(*int)))
+		case *float64:
+			buffer.WriteString(fmt.Sprintf("%f", *item.(*float64)))
+		case *bool:
+			buffer.WriteString(fmt.Sprintf("%t", *item.(*bool)))
+		case *Element:
+			(*item.(*Element)).Render(&buffer)
+		case *[]Element:
+			for _, child := range *item.(*[]Element) {
+				child.Render(&buffer)
+			}
 		case string:
 			buffer.WriteString(item.(string))
 		case Element:

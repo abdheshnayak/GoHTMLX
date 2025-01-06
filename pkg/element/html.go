@@ -155,6 +155,7 @@ func render(n *html.Node, comps map[string]CompInfo) (string, error) {
 	// 	buffer.WriteString(">")
 	case html.ElementNode:
 		isStd := isStandard(strings.TrimSpace(n.Data))
+		re := regexp.MustCompile(`\{(.*)\}`)
 
 		if isStd {
 			buffer.WriteString("E(`")
@@ -177,8 +178,8 @@ func render(n *html.Node, comps map[string]CompInfo) (string, error) {
 				}
 			}
 			// like {data} then remove {}
-			if regexp.MustCompile(`\{(.*)\}`).MatchString(a.Val) {
-				buffer.WriteString(regexp.MustCompile(`\{(.*)\}`).FindStringSubmatch(a.Val)[1])
+			if re.MatchString(a.Val) {
+				buffer.WriteString(re.FindStringSubmatch(a.Val)[1])
 			} else {
 				buffer.WriteString(fmt.Sprintf("`%s`", a.Val))
 			}

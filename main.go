@@ -50,10 +50,25 @@ func Run(src, dist string) error {
 		return err
 	}
 
-	parser := template.New("sections").Delims("<!-- {{-", "}} -->")
+	tmpl, err := template.New("global").Delims("<!-- {{*", "}} -->").Parse(string(input))
+	if err != nil {
+		return err
+	}
+
+	gsections, err := utils.ParseSections(tmpl)
+	if err != nil {
+		return err
+	}
+	imports := []string{}
+	if imps, ok := gsections["imports"]; ok {
+		imps := strings.Split(strings.TrimSpace(imps), "\n")
+		for _, v := range imps {
+			imports = append(imports, strings.TrimSpace(v))
+		}
+	}
 
 	// Parse the template
-	tmpl, err := parser.Parse(string(input))
+	tmpl, err = template.New("sections").Delims("<!-- {{-", "}} -->").Parse(string(input))
 	if err != nil {
 		return err
 	}
@@ -103,7 +118,7 @@ func Run(src, dist string) error {
 
 	// Output the parsed map
 	for name, content := range sections {
-		hparser := htmltemplate.New("sections").Delims("<!-- {{+", "}} -->")
+		hparser := htmltemplate.New("section-data").Delims("<!-- {{+", "}} -->")
 		tpl, err := hparser.Parse(string(content))
 		m, err := utils.ParseSections(tpl)
 		if err != nil {
@@ -125,7 +140,7 @@ func Run(src, dist string) error {
 		}
 	}
 
-	b, err := gocode.ConstructSource(goCodes, structs, nil)
+	b, err := gocode.ConstructSource(goCodes, structs, imports)
 	if err != nil {
 		return err
 	}
