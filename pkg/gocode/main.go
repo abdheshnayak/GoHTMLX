@@ -7,12 +7,15 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
-	"log/slog"
 	"strings"
+
+	"github.com/abdheshnayak/gohtmlx/pkg/utils"
 )
 
 // ReplaceRenderE replaces RenderE function calls with the relevant code block
 func ReplaceRenderE(input []byte, codes map[string][]byte) ([]byte, error) {
+	wrap := false
+
 	// Parse the Go code into an AST
 	fs := token.NewFileSet()
 	node, err := parser.ParseFile(fs, "", input, parser.ParseComments)
@@ -50,13 +53,13 @@ func ReplaceRenderE(input []byte, codes map[string][]byte) ([]byte, error) {
 
 				code, ok := codes[strings.Trim(strings.ToLower(comp.Value), `"`)]
 				if !ok {
-					slog.Warn("No code found for", slog.String("key", strings.Trim(comp.Value, `"`)))
+					utils.Log.Warn("no code found", "for", comp.Value)
 					return true
 				}
 
-				e, err := parser.ParseExpr(string(code))
+				e, err := parser.ParseExpr(fmt.Sprintf("R(%s)", string(code)))
 				if err != nil {
-					fmt.Println("Error:", err)
+					utils.Log.Error("failed to parse", "expression", err)
 					return true
 				}
 				ce, ok := e.(*ast.CallExpr)
@@ -64,12 +67,13 @@ func ReplaceRenderE(input []byte, codes map[string][]byte) ([]byte, error) {
 					return true
 				}
 
-				k := *call
-
-				k.Fun.(*ast.Ident).Name = "Re"
+				if wrap {
+					k := *call
+					k.Fun.(*ast.Ident).Name = "Re"
+					ce.Args = append(ce.Args, &k)
+				}
 
 				*call = *(ce)
-				call.Args = append(call.Args, &k)
 			}
 		}
 		return true

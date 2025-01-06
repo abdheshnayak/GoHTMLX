@@ -37,26 +37,44 @@ Developers can define reusable components in HTML and use them in their Go appli
 
 ```html
 <!-- {{- define "Great" }} -->
+<!-- {{+ define "props" }} -->
+name: string
+<!-- {{+ end }} -->
+<!-- {{+ define "html" }} -->
 <div>
-    <p>Hello {name}!</p>
+  <p>Hello {props.Name}!</p>
 </div>
+<!-- {{+ end }} -->
 <!-- {{- end }} -->
 
 ---
 
 <!-- {{- define "Welcome" }} -->
+<!-- {{+ define "props" }} -->
+projectName: string
+<!-- {{+ end }} -->
+
+<!-- {{+ define "html" }} -->
 <div>
-    <p>Welcome to {name}!</p>
+  <p>Welcome to {props.ProjectName}!</p>
 </div>
+<!-- {{+ end }} -->
 <!-- {{- end }} -->
 
 ---
 
 <!-- {{- define "GreatNWelcome" }} -->
+<!-- {{+ define "props" }} -->
+name: string
+projectName: string
+<!-- {{+ end }} -->
+
+<!-- {{+ define "html" }} -->
 <div>
-    <Great name={name} />
-    <Welcome projectName={projectName} />
+  <Great name={props.Name} ></Great>
+  <Welcome projectName={props.ProjectName} ></Welcome>
 </div>
+<!-- {{+ end }} -->
 <!-- {{- end }} -->
 ```
 
@@ -67,24 +85,14 @@ package main
 
 import (
     . "github.com/abdheshnayak/gohtmlx/pkg/element"
+    gc "github.com/abdheshnayak/gohtmlx/example/dist/gohtmlxc"
 )
 
 func main() {
-    GreatNWelcome("Hello Developers", "gohtmlx").Render(os.Stdout)
-}
-
-func Great(attrs Attr) Node {
-    name := attrs["name"]
-    return RenderE("Great", name)
-}
-
-func Welcome(attrs Attr) Node {
-    projectName := attrs["projectName"]
-    return RenderE("Welcome", projectName)
-}
-
-func GreatNWelcome(name, projectName string) Node {
-    return RenderE("GreatNWelcome", name, projectName)
+    gc.GreatNWelcome(gc.GreatNWelcomeProps{
+		Name:        "Developers",
+		ProjectName: "GoHtmlx",
+	}).Render(os.Stdout)
 }
 ```
 
@@ -101,6 +109,15 @@ When executed, the rendered HTML will look as follows:
         <p>Welcome to gohtmlx!</p>
     </div>
 </div>
+<div>
+    <div>
+        <p>Hello Developers!</p>
+    </div>
+    <div>
+        <p>Welcome to GoHtmlx!</p>
+    </div>
+</div>
+
 ```
 
 ## Usage
@@ -131,7 +148,6 @@ This command will transpile HTML components from the `src` directory and generat
 ## How It Works
 
 1. **Transpilation:** gohtmlx takes HTML components defined with placeholders and transpiles them into valid Go code.
-2. **Code Replacement:** The transpiler replaces placeholders and `Render` function calls with the generated Go code.
 3. **Dynamic Rendering:** The resulting Go code produces dynamic HTML structures, leveraging Go's capabilities for server-side rendering and component-based architecture.
 
 ## Benefits

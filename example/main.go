@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log/slog"
 	"time"
 
-	gohtmlxpages "github.com/abdheshnayak/gohtmlx/example/dist/components"
+	"github.com/abdheshnayak/gohtmlx/example/src/comps"
 	"github.com/abdheshnayak/gohtmlx/pkg/element"
+	"github.com/abdheshnayak/gohtmlx/pkg/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -14,6 +14,8 @@ func main() {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
+
+	app.Use(utils.FiberLogger)
 
 	app.Static("/", "./dist/static", fiber.Static{
 		Compress:      true,
@@ -65,12 +67,7 @@ func main() {
 		return nil
 	})
 
-	slog.Info("Listening on port 3000")
-	if err := app.Listen(":3000"); err != nil {
-		panic(err)
-	}
-
-	slog.Info("Listening on port 3000")
+	utils.Log.Info("Listening on port 3000")
 	if err := app.Listen(":3000"); err != nil {
 		panic(err)
 	}
@@ -80,11 +77,11 @@ func main() {
 func invokeExport(module string) (element.Element, error) {
 	switch module {
 	case "home":
-		return gohtmlxpages.Home(), nil
+		return comps.Home(), nil
 	case "search":
-		return gohtmlxpages.Search(), nil
+		return comps.Search(), nil
 	case "no-result":
-		return gohtmlxpages.NoResult(element.Attrs{}), nil
+		return comps.NoResult(), nil
 	default:
 		return nil, fmt.Errorf("module %s not found", module)
 	}

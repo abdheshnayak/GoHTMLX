@@ -6,43 +6,46 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/abdheshnayak/gohtmlx/pkg/utils"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )
 
-func capitalize(s string) string {
-	if len(s) == 0 {
-		return s
-	}
-	return strings.ToUpper(string(s[0])) + s[1:]
+type CompInfo struct {
+	Name  string
+	Props map[string]string
 }
 
 type Html interface {
-	RenderGolangCode(comps map[string]string) ([]byte, error)
+	RenderGolangCode(comps map[string]CompInfo) (string, error)
 }
 
 type htmlc struct {
 	nodes []*html.Node
 }
 
-func (h htmlc) RenderGolangCode(comps map[string]string) ([]byte, error) {
+func (h htmlc) RenderGolangCode(comps map[string]CompInfo) (string, error) {
 	// string writer
 	var buffer strings.Builder
-	bts := [][]byte{}
+	bts := []string{}
 
 	for _, n := range h.nodes {
 		b, err := render(n, comps)
 		if err != nil {
-			return nil, err
+			return "", err
+		}
+
+		if len(strings.TrimSpace(b)) == 0 {
+			continue
 		}
 
 		bts = append(bts, b)
 		// buffer.Write(b)
 	}
 
-	buffer.Write(bytes.Join(bts, []byte(",")))
+	buffer.WriteString(strings.Join(bts, ","))
 
-	return []byte(buffer.String()), nil
+	return buffer.String(), nil
 }
 
 func NewHtml(htmlCode []byte) (Html, error) {
@@ -94,6 +97,10 @@ func processNode(input string) string {
 		}
 	}
 
+	inners := strings.Join(tokens, ", ")
+	if len(strings.TrimSpace(inners)) == 0 {
+		return ""
+	}
 	// Join tokens to form the final R(...) string
 	result := fmt.Sprintf("R(%s)", strings.Join(tokens, ", "))
 	return result
@@ -123,12 +130,15 @@ func processNodePart(input string) string {
 		}
 	}
 
-	// Join tokens to form the final R(...) string
-	result := fmt.Sprintf("R(%s)", strings.Join(tokens, ", "))
+	inners := strings.Join(tokens, ", ")
+	if len(strings.TrimSpace(inners)) == 0 {
+		return ""
+	}
+	result := fmt.Sprintf("R(%s)", inners)
 	return result
 }
 
-func render(n *html.Node, comps map[string]string) ([]byte, error) {
+func render(n *html.Node, comps map[string]CompInfo) (string, error) {
 	var buffer strings.Builder
 
 	switch n.Type {
@@ -144,18 +154,28 @@ func render(n *html.Node, comps map[string]string) ([]byte, error) {
 	// 	buffer.WriteString(n.Data)
 	// 	buffer.WriteString(">")
 	case html.ElementNode:
+		isStd := isStandard(strings.TrimSpace(n.Data))
 
-		if !isStandard(n.Data) {
-			buffer.WriteString(fmt.Sprintf("%s(", comps[trimString(n.Data)]))
-		} else {
+		if isStd {
 			buffer.WriteString("E(`")
 			buffer.WriteString(strings.TrimSpace(n.Data))
 			buffer.WriteString("`,")
+			buffer.WriteString("Attrs{")
+		} else {
+			buffer.WriteString(fmt.Sprintf("%s(", comps[trimString(n.Data)].Name))
+			buffer.WriteString(fmt.Sprintf("%sProps{", comps[trimString(n.Data)].Name))
 		}
 
-		buffer.WriteString("Attrs{")
 		for _, a := range n.Attr {
-			buffer.WriteString(fmt.Sprintf("`%s`:", a.Key))
+			if isStd {
+				buffer.WriteString(fmt.Sprintf("`%s`:", a.Key))
+			} else {
+				if attr, ok := comps[n.Data].Props[a.Key]; ok {
+					buffer.WriteString(fmt.Sprintf("%s:", utils.Capitalize(attr)))
+				} else {
+					buffer.WriteString(fmt.Sprintf("%s:", utils.Capitalize(a.Key)))
+				}
+			}
 			// like {data} then remove {}
 			if regexp.MustCompile(`\{(.*)\}`).MatchString(a.Val) {
 				buffer.WriteString(regexp.MustCompile(`\{(.*)\}`).FindStringSubmatch(a.Val)[1])
@@ -179,10 +199,10 @@ func render(n *html.Node, comps map[string]string) ([]byte, error) {
 			for c := n.FirstChild; c != nil; c = c.NextSibling {
 				b, err := render(c, comps)
 				if err != nil {
-					return nil, err
+					return "", err
 				}
 
-				if len(b) == 0 {
+				if len(strings.TrimSpace(b)) == 0 {
 					continue
 				}
 
@@ -199,20 +219,20 @@ func render(n *html.Node, comps map[string]string) ([]byte, error) {
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
 			b, err := render(c, comps)
 			if err != nil {
-				return nil, err
+				return "", err
 			}
 
-			if len(b) == 0 {
+			if len(strings.TrimSpace(b)) == 0 {
 				continue
 			}
 
 			childs = append(childs, string(b))
-			// buffer.Write(b)
 		}
+
 		buffer.WriteString(strings.Join(childs, ","))
 	default:
-		return nil, nil
+		return "", nil
 	}
 
-	return []byte(buffer.String()), nil
+	return buffer.String(), nil
 }
