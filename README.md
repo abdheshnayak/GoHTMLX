@@ -25,14 +25,6 @@ cd example
 task dev
 ```
 
-## Installation
-
-To install gohtmlx, you can use the following command:
-
-```bash
-go install github.com/abdheshnayak/gohtmlx@latest
-```
-
 ## Goals
 
 gohtmlx allows developers to write reusable HTML components, which are then transpiled into Go code. The generated Go code can be utilized to render dynamic and reusable server-side components efficiently. The focus is on providing a simple way to create server-rendered HTML with a declarative and reusable approach.
