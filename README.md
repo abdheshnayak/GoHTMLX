@@ -36,7 +36,7 @@ Developers can define reusable components in HTML and use them in their Go appli
 ### Defining Components
 
 ```html
-<!-- {{- define "Great" }} -->
+<!-- {{- define "Greet" }} -->
 <!-- {{+ define "props" }} -->
 name: string
 <!-- {{+ end }} -->
@@ -63,7 +63,7 @@ projectName: string
 
 ---
 
-<!-- {{- define "GreatNWelcome" }} -->
+<!-- {{- define "GreetNWelcome" }} -->
 <!-- {{+ define "props" }} -->
 name: string
 projectName: string
@@ -71,7 +71,7 @@ projectName: string
 
 <!-- {{+ define "html" }} -->
 <div>
-  <Great name={props.Name} ></Great>
+  <Greet name={props.Name} ></Greet>
   <Welcome projectName={props.ProjectName} ></Welcome>
 </div>
 <!-- {{+ end }} -->
@@ -84,12 +84,11 @@ projectName: string
 package main
 
 import (
-    . "github.com/abdheshnayak/gohtmlx/pkg/element"
     gc "github.com/abdheshnayak/gohtmlx/example/dist/gohtmlxc"
 )
 
 func main() {
-    gc.GreatNWelcome(gc.GreatNWelcomeProps{
+    gc.GreetNWelcome(gc.GreetNWelcomeProps{
 		Name:        "Developers",
 		ProjectName: "GoHtmlx",
 	}).Render(os.Stdout)
@@ -109,15 +108,6 @@ When executed, the rendered HTML will look as follows:
         <p>Welcome to gohtmlx!</p>
     </div>
 </div>
-<div>
-    <div>
-        <p>Hello Developers!</p>
-    </div>
-    <div>
-        <p>Welcome to GoHtmlx!</p>
-    </div>
-</div>
-
 ```
 
 ## Usage

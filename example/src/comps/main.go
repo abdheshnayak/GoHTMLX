@@ -8,16 +8,16 @@ import (
 func Home() Element {
 	name := "hi"
 
-	return gc.HomeProps{
+	return gc.Home{
 		Id:   "app",
 		Name: name,
 	}.Get()
 }
 
 func Search() Element {
-	return gc.SearchResultProps{}.Get()
+	return gc.SearchResult{}.Get()
 }
 
 func NoResult() Element {
-	return gc.NoResultProps{}.Get()
+	return gc.NoResult{}.Get()
 }

@@ -24,6 +24,59 @@ type htmlc struct {
 	nodes []*html.Node
 }
 
+func GenerateProps(n *html.Node, comps map[string]CompInfo, atrrs []html.Attribute) (string, error) {
+	isStd := isStandard(n.Data)
+
+	var buffer strings.Builder
+
+	if isStd {
+		buffer.WriteString("E(`")
+		buffer.WriteString(strings.TrimSpace(n.Data))
+		buffer.WriteString("`,")
+		buffer.WriteString("Attrs{")
+
+		for _, a := range n.Attr {
+			if isStd {
+				buffer.WriteString(fmt.Sprintf("`%s`:", a.Key))
+			} else {
+				if attr, ok := comps[n.Data].Props[a.Key]; ok {
+					buffer.WriteString(fmt.Sprintf("%s:", utils.Capitalize(attr)))
+				} else {
+					buffer.WriteString(fmt.Sprintf("%s:", utils.Capitalize(a.Key)))
+				}
+			}
+			buffer.WriteString(processRaws(a.Val))
+			buffer.WriteString(",")
+		}
+		buffer.WriteString("},")
+
+		return buffer.String(), nil
+	}
+
+	var props strings.Builder
+	var attrs strings.Builder
+	for _, a := range n.Attr {
+		if prop, ok := comps[n.Data].Props[a.Key]; ok {
+			props.WriteString(fmt.Sprintf("%s:", utils.Capitalize(prop)))
+
+			props.WriteString(processRaws(a.Val))
+			props.WriteString(",")
+		} else {
+			attrs.WriteString(fmt.Sprintf("`%s`:", a.Key))
+
+			attrs.WriteString(processRaws(a.Val))
+			attrs.WriteString(",")
+		}
+
+	}
+
+	buffer.WriteString(fmt.Sprintf("%sComp(", comps[strings.TrimSpace(n.Data)].Name))
+	buffer.WriteString(fmt.Sprintf("%s{%s},", comps[strings.TrimSpace(n.Data)].Name, props.String()))
+	buffer.WriteString(fmt.Sprintf("Attrs{%s},", attrs.String()))
+
+	return buffer.String(), nil
+}
+
 func (h htmlc) RenderGolangCode(comps map[string]CompInfo) (string, error) {
 	// string writer
 	var buffer strings.Builder
@@ -33,10 +86,6 @@ func (h htmlc) RenderGolangCode(comps map[string]CompInfo) (string, error) {
 		b, err := render(n, comps)
 		if err != nil {
 			return "", err
-		}
-
-		if len(strings.TrimSpace(b)) == 0 {
-			continue
 		}
 
 		bts = append(bts, b)
@@ -69,16 +118,8 @@ func NewHtml(htmlCode []byte) (Html, error) {
 	}, nil
 }
 
-func trimString(s string) string {
-	return strings.Trim(strings.TrimSpace(s), "\n")
-}
-func trimBytes(b []byte) []byte {
-	return bytes.Trim(bytes.TrimSpace(b), "\n")
-}
-
 func processNode(input string) string {
 	// Regular expression to match {item} or {{item}}
-	input = strings.TrimSpace(input)
 	varPattern := regexp.MustCompile(`\{{2,}(.*)\}{2,}`)
 	tokens := []string{}
 
@@ -88,9 +129,8 @@ func processNode(input string) string {
 
 	// Iterate over the split parts and matches to construct the result
 	for i, part := range splitParts {
-		if strings.TrimSpace(part) != "" {
-			tokens = append(tokens, processNodePart(part))
-		}
+		tokens = append(tokens, processRaws(part))
+
 		if i < len(matches) {
 			match := matches[i]
 			tokens = append(tokens, fmt.Sprintf("`%s`", match[0]))
@@ -98,7 +138,7 @@ func processNode(input string) string {
 	}
 
 	inners := strings.Join(tokens, ", ")
-	if len(strings.TrimSpace(inners)) == 0 {
+	if len(inners) == 0 {
 		return ""
 	}
 	// Join tokens to form the final R(...) string
@@ -106,36 +146,55 @@ func processNode(input string) string {
 	return result
 }
 
-func processNodePart(input string) string {
-	// Regular expression to match {item} or {{item}}
-	varPattern := regexp.MustCompile(`\{(.*)\}`)
-	tokens := []string{}
+func processRaws(input string) string {
+	// TODO: update this regex to handle cases where multiple expressions can present in single line
+	// eg: {item} {item2}
+	// TODO: update this regex to handle cases witch single expression present in multiple lines
+	/*
+			   eg:
+		        {func(inp []string) string {
+		            return strings.Join(inp)
+		        }(items)}
+	*/
 
-	// Split the input string into parts based on variable patterns
-	splitParts := varPattern.Split(input, -1)
-	matches := varPattern.FindAllStringSubmatch(input, -1)
+	re := regexp.MustCompile(`\{(.*)\}`)
 
-	// Iterate over the split parts and matches to construct the result
-	for i, part := range splitParts {
-		if strings.TrimSpace(part) != "" {
-			tokens = append(tokens, fmt.Sprintf("`%s`", part))
-		}
-		if i < len(matches) {
-			match := matches[i]
-			if strings.HasPrefix(match[0], "{") && strings.HasSuffix(match[0], "}") {
-				tokens = append(tokens, fmt.Sprintf("%s", match[1]))
-			} else {
-				tokens = append(tokens, match[0])
+	if re.MatchString(input) {
+		splitParts := re.Split(input, -1)
+		matches := re.FindAllStringSubmatch(input, -1)
+
+		tokens := []string{}
+
+		for i, v := range splitParts {
+			if v != "" {
+				tokens = append(tokens, fmt.Sprintf("`%s`", v))
+			}
+
+			if i < len(matches) {
+				val := matches[i][1]
+				if val == "" {
+					continue
+				}
+
+				if strings.HasPrefix(val, "$") {
+					fmt.Println(val)
+					f := strings.Split(val, ".")
+					tokens = append(tokens, fmt.Sprintf("%s[\"%s\"]", strings.Replace(f[0], "$", "", 1), f[1]))
+				} else {
+					tokens = append(tokens, val)
+				}
 			}
 		}
-	}
 
-	inners := strings.Join(tokens, ", ")
-	if len(strings.TrimSpace(inners)) == 0 {
-		return ""
+		if len(tokens) > 1 {
+			return fmt.Sprintf("R(%s)", strings.Join(tokens, ","))
+		}
+
+		return strings.Join(tokens, ",")
+
+	} else {
+		return fmt.Sprintf("`%s`", input)
 	}
-	result := fmt.Sprintf("R(%s)", inners)
-	return result
 }
 
 func render(n *html.Node, comps map[string]CompInfo) (string, error) {
@@ -143,7 +202,7 @@ func render(n *html.Node, comps map[string]CompInfo) (string, error) {
 
 	switch n.Type {
 	case html.TextNode:
-		buffer.WriteString(processNode(strings.TrimSpace(n.Data)))
+		buffer.WriteString(processNode(n.Data))
 
 	// case html.CommentNode:
 	// 	buffer.WriteString("<!--")
@@ -154,42 +213,16 @@ func render(n *html.Node, comps map[string]CompInfo) (string, error) {
 	// 	buffer.WriteString(n.Data)
 	// 	buffer.WriteString(">")
 	case html.ElementNode:
-		isStd := isStandard(strings.TrimSpace(n.Data))
-		re := regexp.MustCompile(`\{(.*)\}`)
 
-		if isStd {
-			buffer.WriteString("E(`")
-			buffer.WriteString(strings.TrimSpace(n.Data))
-			buffer.WriteString("`,")
-			buffer.WriteString("Attrs{")
-		} else {
-			buffer.WriteString(fmt.Sprintf("%s(", comps[trimString(n.Data)].Name))
-			buffer.WriteString(fmt.Sprintf("%sProps{", comps[trimString(n.Data)].Name))
+		s, err := GenerateProps(n, comps, n.Attr)
+		if err != nil {
+			return "", err
 		}
 
-		for _, a := range n.Attr {
-			if isStd {
-				buffer.WriteString(fmt.Sprintf("`%s`:", a.Key))
-			} else {
-				if attr, ok := comps[n.Data].Props[a.Key]; ok {
-					buffer.WriteString(fmt.Sprintf("%s:", utils.Capitalize(attr)))
-				} else {
-					buffer.WriteString(fmt.Sprintf("%s:", utils.Capitalize(a.Key)))
-				}
-			}
-			// like {data} then remove {}
-			if re.MatchString(a.Val) {
-				buffer.WriteString(re.FindStringSubmatch(a.Val)[1])
-			} else {
-				buffer.WriteString(fmt.Sprintf("`%s`", a.Val))
-			}
-			buffer.WriteString(",")
-		}
-		buffer.WriteString("},")
+		buffer.WriteString(s)
+
 		childs := []string{}
 		if n.Data == "script" {
-			// childs = append(childs, "E(``)")
-
 			buffer.WriteString("R(`")
 			for c := n.FirstChild; c != nil; c = c.NextSibling {
 				buffer.WriteString(c.Data)
@@ -203,7 +236,7 @@ func render(n *html.Node, comps map[string]CompInfo) (string, error) {
 					return "", err
 				}
 
-				if len(strings.TrimSpace(b)) == 0 {
+				if len(b) == 0 {
 					continue
 				}
 
@@ -223,7 +256,7 @@ func render(n *html.Node, comps map[string]CompInfo) (string, error) {
 				return "", err
 			}
 
-			if len(strings.TrimSpace(b)) == 0 {
+			if len(b) == 0 {
 				continue
 			}
 

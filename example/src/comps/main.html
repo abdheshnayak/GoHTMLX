@@ -17,7 +17,9 @@ id: string
     <script src="https://unpkg.com/lucide@latest" async="true" onload="lucide.createIcons()"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   </head>
-  <body class="bg-slate-900 text-slate-50 p-3" id={props.Id}>
+  <body class="{$attrs.class} text-slate-50 p-3" id={props.Id}>
+    {props.Id}
+    {$attrs.class}
     {children}
     <HomeScript></HomeScript>
   </body>
@@ -48,7 +50,7 @@ name: string
 <!-- {{+ end }} -->
 
 <!-- {{+ define "html" }} -->
-<Root id={props.Id}>
+<Root id={props.Id} class="bg-slate-900">
   <Layout>
     <form class="flex flex-col gap-6" hx-post="/search" hx-target="#search-results" hx-swap="innerHTML">
       <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" />

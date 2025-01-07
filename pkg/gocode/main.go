@@ -1,97 +1,81 @@
 package gocode
 
 import (
-	"bytes"
 	"fmt"
-	"go/ast"
 	"go/format"
-	"go/parser"
-	"go/token"
 	"strings"
 
 	"github.com/abdheshnayak/gohtmlx/pkg/utils"
 )
 
-// ReplaceRenderE replaces RenderE function calls with the relevant code block
-func ReplaceRenderE(input []byte, codes map[string][]byte) ([]byte, error) {
-	wrap := false
+func ConstructStruct(props map[string]string, name string) string {
+	var buffer strings.Builder
+	buffer.WriteString("type ")
+	buffer.WriteString(fmt.Sprintf("%s", name))
+	buffer.WriteString(" struct {\n")
 
-	// Parse the Go code into an AST
-	fs := token.NewFileSet()
-	node, err := parser.ParseFile(fs, "", input, parser.ParseComments)
+	for k, v := range props {
+		buffer.WriteString(utils.Capitalize(k))
+		buffer.WriteString(" ")
+		buffer.WriteString(v)
+		buffer.WriteString("\n")
+	}
+
+	buffer.WriteString("Attrs Attrs\n")
+
+	buffer.WriteString("}\n")
+
+	b, err := format.Source([]byte(buffer.String()))
 	if err != nil {
-		return nil, err
+		utils.Log.Error("failed to format source", buffer.String(), err)
+
+		return buffer.String()
 	}
-
-	// Traverse the AST and replace RenderE calls
-	ast.Inspect(node, func(n ast.Node) bool {
-		// get pkg name
-		pkg, ok := n.(*ast.File)
-		if ok {
-			pkg.Name.Name = fmt.Sprintf("gohtmlx%s", pkg.Name.Name)
-		}
-
-		// Check if it's a function call
-		if call, ok := n.(*ast.CallExpr); ok {
-			// Check if it's a call to RenderE
-			if ident, ok := call.Fun.(*ast.Ident); ok && ident.Name == "RenderE" {
-				// Replace RenderE function with the relevant code block
-				// For simplicity, replace it with a print statement for now
-				// You can replace this with your relevant code
-				if len(call.Args) == 0 {
-					return true
-				}
-
-				comp, ok := call.Args[0].(*ast.BasicLit)
-				if !ok {
-					return true
-				}
-
-				if comp.Kind != token.STRING {
-					return true
-				}
-
-				code, ok := codes[strings.Trim(strings.ToLower(comp.Value), `"`)]
-				if !ok {
-					utils.Log.Warn("no code found", "for", comp.Value)
-					return true
-				}
-
-				e, err := parser.ParseExpr(fmt.Sprintf("R(%s)", string(code)))
-				if err != nil {
-					utils.Log.Error("failed to parse", "expression", err)
-					return true
-				}
-				ce, ok := e.(*ast.CallExpr)
-				if !ok {
-					return true
-				}
-
-				if wrap {
-					k := *call
-					k.Fun.(*ast.Ident).Name = "Re"
-					ce.Args = append(ce.Args, &k)
-				}
-
-				*call = *(ce)
-			}
-		}
-		return true
-	})
-
-	// Re-generate the Go code from the modified AST (this step can be customized)
-	var buf bytes.Buffer
-	if err = format.Node(&buf, fs, node); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return string(b)
 }
 
-// Helper function to convert argument list to a string
-func getArgsAsString(args []ast.Expr) string {
-	var argStrings []string
-	for _, arg := range args {
-		argStrings = append(argStrings, fmt.Sprintf("%v", arg))
+func ConstructSource(codes map[string]string, structs []string, imports []string) (string, error) {
+	var builder strings.Builder
+
+	builder.WriteString("package gohtmlxc\n\n")
+	builder.WriteString("import (\n")
+
+	builder.WriteString(". \"github.com/abdheshnayak/gohtmlx/pkg/element\"\n")
+
+	for _, v := range imports {
+		builder.WriteString(fmt.Sprintf("%s\n", strings.TrimSpace(v)))
 	}
-	return strings.Join(argStrings, ", ")
+
+	builder.WriteString(")\n\n")
+
+	structsByte := strings.Join(structs, "\n\n")
+	builder.WriteString(string(structsByte))
+
+	for k, v := range codes {
+		builder.WriteString(fmt.Sprintf("func %sComp(", k))
+		builder.WriteString(fmt.Sprintf("props %s, attrs Attrs, children ...Element", k))
+		builder.WriteString(") Element {\n")
+
+		builder.WriteString(`
+        props.Attrs = attrs
+        if props.Attrs == nil{
+            props.Attrs = Attrs{}
+        }
+    `)
+
+		builder.WriteString(fmt.Sprintf("\nreturn %s\n", v))
+		builder.WriteString("\n}\n\n")
+
+		builder.WriteString(fmt.Sprintf("func (c %s) Get(children ...Element) Element {\n", k))
+
+		builder.WriteString(fmt.Sprintf("return %sComp(c, c.Attrs, children...)\n", k))
+		builder.WriteString("}\n\n")
+	}
+
+	b, err := format.Source([]byte(builder.String()))
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
 }

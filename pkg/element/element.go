@@ -43,6 +43,7 @@ type renderElement struct {
 
 func (t renderElement) Render(w io.Writer) (int, error) {
 	var buffer strings.Builder
+
 	for _, item := range t.items {
 		switch item.(type) {
 		case int:
@@ -66,7 +67,9 @@ func (t renderElement) Render(w io.Writer) (int, error) {
 				child.Render(&buffer)
 			}
 		case string:
-			buffer.WriteString(item.(string))
+			buffer.WriteString(strings.ReplaceAll(item.(string), " ", "&nbsp;"))
+			// buffer.WriteString(item.(string))
+
 		case Element:
 			item.(Element).Render(&buffer)
 		case []Element:
