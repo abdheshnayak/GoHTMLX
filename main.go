@@ -50,7 +50,7 @@ func Run(src, dist string) error {
 		return err
 	}
 
-	tmpl, err := template.New("global").Delims("<!-- {{*", "}} -->").Parse(string(input))
+	tmpl, err := template.New("global").Delims("<!-- *", " -->").Parse(string(input))
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func Run(src, dist string) error {
 	}
 
 	// Parse the template
-	tmpl, err = template.New("sections").Delims("<!-- {{-", "}} -->").Parse(string(input))
+	tmpl, err = template.New("sections").Delims("<!-- +", " -->").Parse(string(input))
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func Run(src, dist string) error {
 	structs := []string{}
 
 	for name, content := range sections {
-		hparser := htmltemplate.New("sections").Delims("<!-- {{+", "}} -->")
+		hparser := htmltemplate.New("sections").Delims("<!-- |", " -->")
 		tpl, err := hparser.Parse(string(content))
 		m, err := utils.ParseSections(tpl)
 		if err != nil {
@@ -118,7 +118,7 @@ func Run(src, dist string) error {
 
 	// Output the parsed map
 	for name, content := range sections {
-		hparser := htmltemplate.New("section-data").Delims("<!-- {{+", "}} -->")
+		hparser := htmltemplate.New("section-data").Delims("<!-- |", "-->")
 		tpl, err := hparser.Parse(string(content))
 		m, err := utils.ParseSections(tpl)
 		if err != nil {

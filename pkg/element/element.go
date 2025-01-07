@@ -8,6 +8,10 @@ import (
 	"github.com/abdheshnayak/gohtmlx/pkg/utils"
 )
 
+const (
+	nbspChar = " "
+)
+
 type Attrs map[string]any
 
 func GetAttr[T any](attrs Attrs, key string) *T {
@@ -28,6 +32,11 @@ type Event any
 
 type Element interface {
 	Render(io.Writer) (int, error)
+}
+
+type forElement[T any] struct {
+	items    []T
+	children Element
 }
 
 type element struct {
@@ -67,7 +76,7 @@ func (t renderElement) Render(w io.Writer) (int, error) {
 				child.Render(&buffer)
 			}
 		case string:
-			buffer.WriteString(strings.ReplaceAll(item.(string), " ", "&nbsp;"))
+			buffer.WriteString(strings.ReplaceAll(item.(string), nbspChar, "&nbsp;"))
 			// buffer.WriteString(item.(string))
 
 		case Element:

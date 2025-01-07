@@ -78,10 +78,6 @@ func invokeExport(module string) (element.Element, error) {
 	switch module {
 	case "home":
 		return comps.Home(), nil
-	case "search":
-		return comps.Search(), nil
-	case "no-result":
-		return comps.NoResult(), nil
 	default:
 		return nil, fmt.Errorf("module %s not found", module)
 	}

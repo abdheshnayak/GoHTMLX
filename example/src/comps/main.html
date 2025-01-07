@@ -1,152 +1,190 @@
-<!-- {{* define "imports" }} -->
-"strings"
-<!-- {{* end }} -->
+<!-- * define "imports" -->
+t "github.com/abdheshnayak/gohtmlx/example/src/types"
+<!-- * end -->
 
----
+<!-- + define "PageStyle" -->
+<!-- | define "html" -->
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+header {
+  background-color: #333;
+  color: white;
+  padding: 10px;
+}
+nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+nav ul li {
+  display: inline;
+  margin-right: 15px;
+}
+nav ul li a {
+  color: white;
+  text-decoration: none;
+}
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 20px;
+}
+.main-content {
+  flex: 3;
+  padding: 20px;
+  background-color: #f4f4f4;
+  margin-right: 10px;
+}
+.sidebar {
+  flex: 1;
+  padding: 20px;
+  background-color: #ddd;
+}
+footer {
+  text-align: center;
+  padding: 10px;
+  background-color: #333;
+  color: white;
+  margin-top: 20px;
+}
+</style>
 
-<!-- {{- define "Root" }} -->
-<!-- {{+ define "props" }} -->
-id: string
-<!-- {{+ end }} -->
+<!-- | end -->
+<!-- + end -->
 
-<!-- {{+ define "html" }} -->
-<html>
+<!-- + define "Home" -->
+<!-- | define "props" -->
+tables: "[]t.Table"
+<!-- | end -->
+<!-- | define "html" -->
+<html lang="en">
   <head>
-    <link rel="stylesheet" href="/main.css" />
-    <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.js" integrity="sha384-oeUn82QNXPuVkGCkcrInrS1twIxKhkZiFfr2TdiuObZ3n3yIeMiqcRzkIcguaof1" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/lucide@latest" async="true" onload="lucide.createIcons()"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Test Page</title>
+    <PageStyle></PageStyle>
+
   </head>
-  <body class="{$attrs.class} text-slate-50 p-3" id={props.Id}>
-    {props.Id}
-    {$attrs.class}
-    {children}
-    <HomeScript></HomeScript>
+  <body>
+
+    <Header></Header>
+
+
+    <div class="container">
+      <div class="main-content">
+        <h2>Main Content</h2>
+        <p>This is the main content area. It contains paragraphs, lists, tables, and images for testing.</p>
+
+        <for items={props.tables} as="i">
+          <SampleTable item={i}></SampleTable>
+        </for>
+
+        <MyForm></MyForm>
+      </div>
+
+      <Sidebar></Sidebar> 
+    </div>
+
+    <footer>
+      <p>&copy; 2025 HTML Test Page. All rights reserved.</p>
+    </footer>
+
   </body>
 </html>
-<!-- {{+ end }} -->
-<!-- {{- end }} -->
+<!-- | end -->
+<!-- + end -->
 
 ---
 
-<!-- {{- define "Layout" }} -->
-<!-- {{+ define "props" }} -->
-id: string
-<!-- {{+ end }} -->
+<!-- + define "Sidebar" -->
+<!-- | define "html" -->
+<aside class="sidebar">
+  <h2>Sidebar</h2>
+  <p>This is the sidebar area for testing nested content and small elements.</p>
+  <h3>Quick Links</h3>
+  <ul>
+    <li><a href="#">Link 1</a></li>
+    <li><a href="#">Link 2</a></li>
+    <li><a href="#">Link 3</a></li>
+    <li><a href="#">Link 4</a></li>
+  </ul>
+</aside>
+<!-- | end -->
+<!-- + end -->
 
-<!-- {{+ define "html" }} -->
-<div class="h-screen w-screen flex flex-col items-center justify-center">
-  {children}
-</div>
-<!-- {{+ end }} -->
-<!-- {{- end }} -->
+<!-- + define "SampleTable" -->
+<!-- | define "props" -->
+item: t.Table
+<!-- | end -->
+<!-- | define "html" -->
+<h3>Sample Table {props.item.Id}</h3>
+<table border="1" width="100%">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Age</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>Alice</td>
+      <td>25</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Bob</td>
+      <td>30</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Charlie</td>
+      <td>35</td>
+    </tr>
+  </tbody>
+</table>
+<!-- | end -->
+<!-- + end -->
 
----
 
-<!-- {{- define "Home" }} -->
-<!-- {{+ define "props" }} -->
-id: string
-name: string
-<!-- {{+ end }} -->
+<!-- + define "Header" -->
+<!-- | define "html" -->
+<header>
+  <h1>HTML Test Page</h1>
+  <nav>
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Services</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+  </nav>
+</header>!-- | define "html" -->
+<!-- | end -->
+<!-- + end -->
 
-<!-- {{+ define "html" }} -->
-<Root id={props.Id} class="bg-slate-900">
-  <Layout>
-    <form class="flex flex-col gap-6" hx-post="/search" hx-target="#search-results" hx-swap="innerHTML">
-      <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" />
 
-      <InputComp vmodel="searchText" name={props.Name} placeholder="Search Here" ></Inputcomp>
+<!-- + define "MyForm" -->
+<!-- | define "html" -->
+<h3>Sample Form</h3>
+<form>
+  <MyInput type="text" id="name" name="name" label="Name"></MyInput>
+  <MyInput type="text" id="email" name="email" label="Email"></MyInput>
+  <label for="message">Message:</label><br>
+  <textarea id="message" name="message" rows="4"></textarea><br><br>
+  <input type="submit" value="Submit">
+</form>
+<!-- | end -->
+<!-- + end -->
 
-      <div>{{ searchText? "Search for" : "" }} {{ searchText }}</div>
 
-      <button class="bg-blue-500 text-white px-4 py-2 rounded-md" type="submit">Search</button>
-
-      <div id="search-results" class="flex flex-col gap-6 transition-all">
-        <NoResult></NoResult>
-      </div>
-    </form>
-  </Layout>
-</Root>
-<!-- {{+ end }} -->
-
-<!-- {{- end }} -->
-
----
-
-<!-- {{- define "InputComp" }} -->
-<!-- {{+ define "props" }} -->
-vmodel: string
-name: string
-placeholder: string
-<!-- {{+ end }} -->
-
-<!-- {{+ define "html" }} -->
-<div class="border rounded-md flex items-center gap-3 justify-between px-3">
-  <input v-model={props.Vmodel} class="p-2 bg-transparent flex-1 outline-none" type="text" name={props.Name} placeholder={props.Placeholder} />
-  <button type="button" hx-get="/no-result" hx-target="#search-results" class="p-2 bg-transparent outline-none">
-    <i data-lucide="x"></i>
-  </button>
-</div>
-
-<!-- {{+ end }} -->
-<!-- {{- end }} -->
-
----
-
-<!-- {{- define "SearchCard" }} -->
-<!-- {{+ define "html" }} -->
-<div class="h-24 border">
-  this is search results 
-  {func() string { return strings.Join([]string{"1", "2", "3"}, ",") }()}
-</div>
-<!-- {{+ end }} -->
-<!-- {{- end }} -->
-
----
-
-<!-- {{- define "SearchResult" }} -->
-<!-- {{+ define "html" }} -->
-<div class="flex flex-col gap-6">
-  <h1 class="text-2xl font-bold">Search Results</h1>
-  <div class="grid grid-cols-2 gap-3">
-    <SearchCard></SearchCard>
-    <SearchCard></SearchCard>
-    <SearchCard></SearchCard>
-    <SearchCard></SearchCard>
-  </div>
-</div>
-
-<!-- {{+ end }} -->
-<!-- {{- end }} -->
-
----
-
-<!-- {{- define "NoResult" }} -->
-<!-- {{+ define "html" }} -->
-<div class="flex flex-col gap-6 items-center">
-  <h1 class="text-2xl font-bold">Search Results</h1>
-  <div>
-    No results found
-  </div>
-</div>
-<!-- {{+ end }} -->
-<!-- {{- end }} -->
-
----
-
-<!-- {{- define "HomeScript" -}} -->
-<!-- {{+ define "html" }} -->
-<script>
-const { createApp, ref, reactive } = Vue
-
-createApp({
-  setup() {
-    const searchText = ref('')
-    return {
-      searchText,
-    }
-  }
-}).mount('#app')
-</script>
-<!-- {{+ end }} -->
-<!-- {{- end -}} -->
+<!-- + define "MyInput" -->
+<!-- | define "html" -->
+<label for="{$attrs.id}">{$attrs.label}:</label><br>
+<input type="{$attrs.type}" id="{$attrs.id}" name="{$attrs.name}"><br><br>
+<!-- | end -->
+<!-- + end -->

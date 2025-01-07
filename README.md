@@ -36,46 +36,46 @@ Developers can define reusable components in HTML and use them in their Go appli
 ### Defining Components
 
 ```html
-<!-- {{- define "Greet" }} -->
-<!-- {{+ define "props" }} -->
+<!-- + define "Greet" -->
+<!-- | define "props" -->
 name: string
-<!-- {{+ end }} -->
-<!-- {{+ define "html" }} -->
+<!-- | end -->
+<!-- | define "html" -->
 <div>
   <p>Hello {props.Name}!</p>
 </div>
-<!-- {{+ end }} -->
-<!-- {{- end }} -->
+<!-- | end -->
+<!-- + end -->
 
 ---
 
-<!-- {{- define "Welcome" }} -->
-<!-- {{+ define "props" }} -->
+<!-- + define "Welcome" -->
+<!-- | define "props" -->
 projectName: string
-<!-- {{+ end }} -->
+<!-- | end -->
 
-<!-- {{+ define "html" }} -->
+<!-- | define "html" -->
 <div>
   <p>Welcome to {props.ProjectName}!</p>
 </div>
-<!-- {{+ end }} -->
-<!-- {{- end }} -->
+<!-- | end -->
+<!-- + end -->
 
 ---
 
-<!-- {{- define "GreetNWelcome" }} -->
-<!-- {{+ define "props" }} -->
+<!-- + define "GreetNWelcome" -->
+<!-- | define "props" -->
 name: string
 projectName: string
-<!-- {{+ end }} -->
+<!-- | end -->
 
-<!-- {{+ define "html" }} -->
+<!-- | define "html" -->
 <div>
   <Greet name={props.Name} ></Greet>
   <Welcome projectName={props.ProjectName} ></Welcome>
 </div>
-<!-- {{+ end }} -->
-<!-- {{- end }} -->
+<!-- | end -->
+<!-- + end -->
 ```
 
 ### Using Components in Go

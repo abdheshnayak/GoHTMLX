@@ -1,23 +1,24 @@
 package comps
 
 import (
+	"fmt"
+
 	gc "github.com/abdheshnayak/gohtmlx/example/dist/gohtmlxc"
+	"github.com/abdheshnayak/gohtmlx/example/src/types"
 	. "github.com/abdheshnayak/gohtmlx/pkg/element"
 )
 
 func Home() Element {
-	name := "hi"
-
+	items := []types.Table{}
+	for i := 0; i < 5; i++ {
+		items = append(items, types.Table{
+			Id: fmt.Sprintf("%d", i+1),
+		})
+	}
 	return gc.Home{
-		Id:   "app",
-		Name: name,
+		Tables: items,
+		Attrs: Attrs{
+			"Items": items,
+		},
 	}.Get()
-}
-
-func Search() Element {
-	return gc.SearchResult{}.Get()
-}
-
-func NoResult() Element {
-	return gc.NoResult{}.Get()
 }
