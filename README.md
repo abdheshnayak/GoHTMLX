@@ -88,10 +88,10 @@ import (
 )
 
 func main() {
-    gc.GreetNWelcome(gc.GreetNWelcomeProps{
+    gc.GreetNWelcomeProps{
 		Name:        "Developers",
 		ProjectName: "GoHtmlx",
-	}).Render(os.Stdout)
+	}.Get().Render(os.Stdout)
 }
 ```
 
