@@ -16,7 +16,7 @@ type CompInfo struct {
 	Props map[string]string
 }
 
-type Html interface {
+type HTMLRenderer interface {
 	RenderGolangCode(comps map[string]CompInfo) (string, error)
 }
 
@@ -61,8 +61,8 @@ func processFor(n *html.Node, comps map[string]CompInfo) (string, error) {
 
 	// key = strings.Trim(key, "{}")
 
-	buffer.WriteString("R(func() []Element {\n")
-	buffer.WriteString("resp := []Element{}\n")
+	buffer.WriteString("element.R(func() []element.Element {\n")
+	buffer.WriteString("resp := []element.Element{}\n")
 
 	buffer.WriteString(fmt.Sprintf("for _, %s := range %s {\n", as, key))
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
@@ -90,10 +90,10 @@ func generateProps(n *html.Node, comps map[string]CompInfo) (string, error) {
 	var buffer strings.Builder
 
 	if isStd {
-		buffer.WriteString("E(`")
+		buffer.WriteString("element.E(`")
 		buffer.WriteString(strings.TrimSpace(n.Data))
 		buffer.WriteString("`,")
-		buffer.WriteString("Attrs{")
+		buffer.WriteString("element.Attrs{")
 
 		for _, a := range n.Attr {
 			if isStd {
@@ -132,7 +132,7 @@ func generateProps(n *html.Node, comps map[string]CompInfo) (string, error) {
 
 	buffer.WriteString(fmt.Sprintf("%sComp(", comps[strings.TrimSpace(n.Data)].Name))
 	buffer.WriteString(fmt.Sprintf("%s{%s},", comps[strings.TrimSpace(n.Data)].Name, props.String()))
-	buffer.WriteString(fmt.Sprintf("Attrs{%s},", attrs.String()))
+	buffer.WriteString(fmt.Sprintf("element.Attrs{%s},", attrs.String()))
 
 	return buffer.String(), nil
 }
@@ -142,7 +142,7 @@ func (h htmlc) RenderGolangCode(comps map[string]CompInfo) (string, error) {
 	var buffer strings.Builder
 	bts := []string{}
 
-	buffer.WriteString("R(")
+	buffer.WriteString("element.R(")
 	for _, n := range h.nodes {
 		b, err := render(n, comps)
 		if err != nil {
@@ -159,7 +159,7 @@ func (h htmlc) RenderGolangCode(comps map[string]CompInfo) (string, error) {
 	return buffer.String(), nil
 }
 
-func NewHtml(htmlCode []byte) (Html, error) {
+func NewHtml(htmlCode []byte) (HTMLRenderer, error) {
 	context := &html.Node{
 		Type:     html.ElementNode,
 		DataAtom: atom.Div,
@@ -204,7 +204,7 @@ func processNode(input string) string {
 		return ""
 	}
 	// Join tokens to form the final R(...) string
-	result := fmt.Sprintf("R(%s)", strings.Join(tokens, ", "))
+	result := fmt.Sprintf("element.R(%s)", strings.Join(tokens, ", "))
 	return result
 }
 
@@ -251,7 +251,7 @@ func processRaws(input string) string {
 		}
 
 		if len(tokens) > 1 {
-			return fmt.Sprintf("R(%s)", strings.Join(tokens, ","))
+			return fmt.Sprintf("element.R(%s)", strings.Join(tokens, ","))
 		}
 
 		return strings.Join(tokens, ",")
@@ -294,7 +294,7 @@ func render(n *html.Node, comps map[string]CompInfo) (string, error) {
 
 			childs := []string{}
 			if n.Data == "script" || n.Data == "style" {
-				buffer.WriteString("R(`")
+				buffer.WriteString("element.R(`")
 				for c := n.FirstChild; c != nil; c = c.NextSibling {
 					buffer.WriteString(c.Data)
 				}

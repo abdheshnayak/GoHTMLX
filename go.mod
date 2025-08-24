@@ -3,9 +3,10 @@ module github.com/abdheshnayak/gohtmlx
 go 1.23.4
 
 require (
+	github.com/charmbracelet/log v0.4.0
 	github.com/gofiber/fiber/v2 v2.52.6
-	github.com/nxtcoder17/fwatcher v1.0.3
 	golang.org/x/net v0.33.0
+	gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -13,7 +14,6 @@ require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/lipgloss v0.13.0 // indirect
-	github.com/charmbracelet/log v0.4.0 // indirect
 	github.com/charmbracelet/x/ansi v0.1.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect

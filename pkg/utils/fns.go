@@ -1,13 +1,13 @@
 package utils
 
 import (
-	"log/slog"
+	"os"
 	"strings"
 	"text/template"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/gofiber/fiber/v2"
-	"github.com/nxtcoder17/fwatcher/pkg/logging"
 )
 
 func Capitalize(s string) string {
@@ -49,9 +49,10 @@ func ParseSections(tmpl *template.Template) (map[string]string, error) {
 	return sections, nil
 }
 
-var Log = logging.NewSlogLogger(logging.SlogOptions{
-	ShowTimestamp: true,
-	ShowCaller:    false,
+var Log = log.NewWithOptions(os.Stderr, log.Options{
+	ReportTimestamp: true,
+	ReportCaller:    false,
+	Prefix:          "GoHTMLX",
 })
 
 func FiberLogger(c *fiber.Ctx) error {
@@ -62,11 +63,11 @@ func FiberLogger(c *fiber.Ctx) error {
 
 	// Log the request details
 	Log.Info("HTTP request",
-		slog.String("method", c.Method()),
-		slog.String("path", c.Path()),
-		slog.Int("status", c.Response().StatusCode()),
-		slog.Duration("latency", time.Since(start)),
-		slog.String("ip", c.IP()),
+		"method", c.Method(),
+		"path", c.Path(),
+		"status", c.Response().StatusCode(),
+		"latency", time.Since(start),
+		"ip", c.IP(),
 	)
 
 	return err

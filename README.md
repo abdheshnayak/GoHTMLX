@@ -1,29 +1,50 @@
-# GoHTMLX (HTML Components with Go)
+# GoHTMLX - HTML Components with Go
 
-## Overview
+[![Go Version](https://img.shields.io/badge/go-%3E%3D1.21-blue.svg)](https://golang.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Build Status](https://img.shields.io/badge/build-passing-green.svg)]()
 
-gohtmlx enables developers to define and render reusable HTML components using Go. This tool is designed for scenarios where basic HTML rendering is needed or for writing purely server-side components. It simplifies creating dynamic HTML by allowing developers to define components in HTML and use them in Go code. Unlike React or JSX, gohtmlx focuses on server-side rendering and is not intended for building client-side interactive applications.
+GoHTMLX is a modern, powerful tool for building reusable HTML components using Go. It enables developers to write HTML templates with Go-like syntax and compile them into efficient, type-safe Go code for server-side rendering.
 
-## Try it now
+## ✨ Features
+
+- 🚀 **Fast & Efficient** - Compiles to native Go code for maximum performance
+- 🛡️ **Type Safety** - Full type checking with Go structs and interfaces
+- 🔧 **Developer Friendly** - Hot reload, comprehensive CLI, and excellent error messages
+- 📦 **Component-Based** - Reusable, composable HTML components
+- 🎨 **Modern Syntax** - Clean, intuitive template syntax
+- 🔍 **Testing Support** - Built-in testing utilities and helpers
+- 📚 **Rich Documentation** - Comprehensive guides and API reference
+- 🛠️ **Extensible** - Plugin system and customizable configuration
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+# Install globally
+go install github.com/abdheshnayak/gohtmlx/cmd/gohtmlx@latest
+
+# Or clone and build
+git clone https://github.com/abdheshnayak/gohtmlx.git
+cd gohtmlx
+make install
+```
+
+### Try the Example
 
 ```bash
 git clone https://github.com/abdheshnayak/gohtmlx.git
 cd gohtmlx
-go mod tidy
-go run . --src=example/src --dist=example/dist
-cd example
-go run .
+
+# Build and run example
+make build-example-new && make serve
+
+# Or with development workflow
+make dev
 ```
 
-### or use `task` to run it
-
-```bash
-git clone https://github.com/abdheshnayak/gohtmlx.git
-cd gohtmlx
-go mod tidy
-cd example
-task dev
-```
+Visit `http://localhost:3000` to see the example in action!
 
 ## Goals
 
@@ -110,30 +131,63 @@ When executed, the rendered HTML will look as follows:
 </div>
 ```
 
-## Usage
+## 📖 Usage
 
-### Installation
+### CLI Commands
 
-To install gohtmlx, you can use the following command:
-
-```bash
-go install github.com/abdheshnayak/gohtmlx@latest
-```
-
-### Transpilation
-
-To use gohtmlx, you can run the following command:
+GoHTMLX provides a modern CLI with multiple commands:
 
 ```bash
-gohtmlx --src=path/to/src --dist=path/to/dist
+# Build components once
+gohtmlx build --src=./components --dist=./generated
+
+# Watch for changes and rebuild automatically  
+gohtmlx watch --src=./components --dist=./generated --verbose
+
+# Show version
+gohtmlx version
+
+# Get help
+gohtmlx help
 ```
 
-This command will transpile HTML components from the `src` directory and generate Go code in the `dist` directory.
+### Configuration
 
-### Options
+Create a `gohtmlx.config.yaml` file in your project root:
 
-- `--src`: Specifies the directory containing the source files to be transpiled.
-- `--dist`: Specifies the directory where the transpiled Go code will be generated.
+```yaml
+# Source and output directories
+source_dir: "src"
+output_dir: "dist" 
+package_name: "components"
+
+# Logging
+log_level: "info"
+
+# File watching
+watch:
+  enabled: true
+  extensions: [".html", ".htm"]
+  debounce_ms: 300
+
+# Code generation
+generation:
+  format_code: true
+  add_comments: true
+```
+
+### Project Structure
+
+```
+my-project/
+├── gohtmlx.config.yaml
+├── src/
+│   └── components.html
+├── dist/
+│   └── components/
+│       └── components_generated.go
+└── main.go
+```
 
 ## How It Works
 

@@ -10,7 +10,7 @@ import (
 
 func Home() Element {
 	items := []types.Table{}
-	for i := 0; i < 5; i++ {
+	for i := range 50 {
 		items = append(items, types.Table{
 			Id: fmt.Sprintf("%d", i+1),
 		})

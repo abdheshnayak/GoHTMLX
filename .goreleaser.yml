@@ -1,0 +1,88 @@
+project_name: gohtmlx
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - main: ./cmd/gohtmlx
+    id: gohtmlx
+    binary: gohtmlx
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Version}}
+      - -X main.Commit={{.Commit}}
+      - -X main.Date={{.Date}}
+
+archives:
+  - id: gohtmlx
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+      - gohtmlx.config.yaml
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+brews:
+  - name: gohtmlx
+    repository:
+      owner: abdheshnayak
+      name: homebrew-tap
+    homepage: https://github.com/abdheshnayak/gohtmlx
+    description: HTML Components with Go
+    license: MIT
+
+nfpms:
+  - id: gohtmlx
+    package_name: gohtmlx
+    vendor: abdheshnayak
+    homepage: https://github.com/abdheshnayak/gohtmlx
+    maintainer: abdheshnayak <your-email@example.com>
+    description: HTML Components with Go
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+
+release:
+  github:
+    owner: abdheshnayak
+    name: gohtmlx
+  draft: false
+  prerelease: auto

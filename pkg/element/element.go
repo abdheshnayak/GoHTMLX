@@ -2,30 +2,85 @@ package element
 
 import (
 	"fmt"
+	"html"
 	"io"
 	"strings"
-
-	"github.com/abdheshnayak/gohtmlx/pkg/utils"
 )
 
 const (
-	nbspChar = " "
+	nbspChar = " "
 )
 
+// Attrs represents HTML attributes as a map
 type Attrs map[string]any
 
+// GetAttr safely retrieves a typed attribute value
 func GetAttr[T any](attrs Attrs, key string) *T {
 	if val, ok := attrs[key]; ok {
-		resp, ok := val.(T)
-		if ok {
+		if resp, ok := val.(T); ok {
 			return &resp
 		}
-		utils.Log.Error("invalid type", "for", key)
-		return nil
 	}
-
-	utils.Log.Error("key not found", "for", key)
 	return nil
+}
+
+// GetAttrWithDefault retrieves a typed attribute value with a default fallback
+func GetAttrWithDefault[T any](attrs Attrs, key string, defaultValue T) T {
+	if val := GetAttr[T](attrs, key); val != nil {
+		return *val
+	}
+	return defaultValue
+}
+
+// HasAttr checks if an attribute exists
+func HasAttr(attrs Attrs, key string) bool {
+	_, ok := attrs[key]
+	return ok
+}
+
+// SetAttr sets an attribute value
+func SetAttr(attrs Attrs, key string, value any) {
+	if attrs == nil {
+		attrs = make(Attrs)
+	}
+	attrs[key] = value
+}
+
+// MergeAttrs merges multiple attribute maps, with later maps overriding earlier ones
+func MergeAttrs(attrMaps ...Attrs) Attrs {
+	result := make(Attrs)
+	for _, attrs := range attrMaps {
+		for k, v := range attrs {
+			result[k] = v
+		}
+	}
+	return result
+}
+
+// ClassNames builds a class string from multiple class values
+func ClassNames(classes ...any) string {
+	var result []string
+	for _, class := range classes {
+		switch v := class.(type) {
+		case string:
+			if v != "" {
+				result = append(result, v)
+			}
+		case []string:
+			for _, c := range v {
+				if c != "" {
+					result = append(result, c)
+				}
+			}
+		case map[string]bool:
+			for c, include := range v {
+				if include && c != "" {
+					result = append(result, c)
+				}
+			}
+		}
+	}
+	return strings.Join(result, " ")
 }
 
 type Event any
@@ -76,8 +131,7 @@ func (t renderElement) Render(w io.Writer) (int, error) {
 				child.Render(&buffer)
 			}
 		case string:
-			buffer.WriteString(strings.ReplaceAll(item.(string), nbspChar, "&nbsp;"))
-			// buffer.WriteString(item.(string))
+			buffer.WriteString(html.EscapeString(item.(string)))
 
 		case Element:
 			item.(Element).Render(&buffer)
@@ -86,7 +140,7 @@ func (t renderElement) Render(w io.Writer) (int, error) {
 				child.Render(&buffer)
 			}
 		default:
-			utils.Log.Error("error", "for", fmt.Sprintf("%v", item))
+			// Log error if needed - for now just render as string
 			buffer.WriteString(fmt.Sprintf("%v", item))
 		}
 	}
@@ -126,39 +180,69 @@ func RenderE(element string, props ...interface{}) Element {
 
 func (e element) Render(w io.Writer) (int, error) {
 	var buffer strings.Builder
+
+	// Self-closing tags
+	selfClosing := map[string]bool{
+		"area": true, "base": true, "br": true, "col": true, "embed": true,
+		"hr": true, "img": true, "input": true, "link": true, "meta": true,
+		"param": true, "source": true, "track": true, "wbr": true,
+	}
+
 	buffer.WriteString("<")
 	buffer.WriteString(e.tag)
+
+	// Render attributes
 	for k, v := range e.attrs {
+		// Handle boolean attributes
+		if boolVal, ok := v.(bool); ok {
+			if boolVal {
+				// True boolean attributes are rendered without values
+				buffer.WriteString(" ")
+				buffer.WriteString(html.EscapeString(k))
+			}
+			// False boolean attributes are omitted entirely
+			continue
+		}
+
 		buffer.WriteString(" ")
-		buffer.WriteString(k)
+		buffer.WriteString(html.EscapeString(k))
 		buffer.WriteString("=\"")
 
-		switch v.(type) {
+		switch val := v.(type) {
 		case string:
-			buffer.WriteString(v.(string))
+			buffer.WriteString(html.EscapeString(val))
 		case *string:
-			buffer.WriteString(fmt.Sprintf("%s", *v.(*string)))
+			if val != nil {
+				buffer.WriteString(html.EscapeString(*val))
+			}
+		case int:
+			buffer.WriteString(fmt.Sprintf("%d", val))
+		case float64:
+			buffer.WriteString(fmt.Sprintf("%g", val))
 		case Element:
-			v.(Element).Render(&buffer)
+			val.Render(&buffer)
 		case []Element:
-			for _, child := range v.([]Element) {
+			for _, child := range val {
 				child.Render(&buffer)
 			}
 		default:
-			utils.Log.Error("unknown type", "for", fmt.Sprintf("%v", v))
-			buffer.WriteString(fmt.Sprintf("%v", v))
+			buffer.WriteString(html.EscapeString(fmt.Sprintf("%v", val)))
 		}
 
 		buffer.WriteString("\"")
 	}
 
-	buffer.WriteString(">")
-	for _, child := range e.childrens {
-		child.Render(&buffer)
+	if selfClosing[e.tag] && len(e.childrens) == 0 {
+		buffer.WriteString(" />")
+	} else {
+		buffer.WriteString(">")
+		for _, child := range e.childrens {
+			child.Render(&buffer)
+		}
+		buffer.WriteString("</")
+		buffer.WriteString(e.tag)
+		buffer.WriteString(">")
 	}
-	buffer.WriteString("</")
-	buffer.WriteString(e.tag)
-	buffer.WriteString(">")
 
 	return w.Write([]byte(buffer.String()))
 }
