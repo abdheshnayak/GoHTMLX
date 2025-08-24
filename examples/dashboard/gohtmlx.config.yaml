@@ -1,0 +1,36 @@
+# GoHTMLX Configuration for Dashboard Example
+# This file contains configuration options for the GoHTMLX compiler
+
+# Source and output directories
+source_dir: "src"
+output_dir: "dist"
+package_name: "gohtmlxc"
+
+# Logging configuration
+log_level: "info"  # debug, info, warn, error
+
+# File watching configuration
+watch:
+  enabled: true
+  extensions: [".html", ".htm"]
+  ignore_files: ["*.tmp", ".*", "*.backup"]
+  debounce_ms: 300
+
+# Template parsing configuration
+template:
+  start_delim: "<!-- +"
+  end_delim: " -->"
+  prop_delim: "<!-- |"
+  prop_end: " -->"
+
+# Code generation configuration
+generation:
+  format_code: true
+  add_comments: true
+  import_path: "github.com/abdheshnayak/gohtmlx/pkg/element"
+  element_package: "element"
+
+# File extensions and their types
+extensions:
+  ".html": "html"
+  ".htm": "html"

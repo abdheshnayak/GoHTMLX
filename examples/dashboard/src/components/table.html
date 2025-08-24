@@ -1,0 +1,187 @@
+<!-- * define "imports" -->
+t "github.com/abdheshnayak/gohtmlx/examples/dashboard/src/types"
+"fmt"
+"time"
+<!-- * end -->
+
+<!-- + define "Table" -->
+<!-- | define "props" -->
+columns: "[]t.TableColumn"
+data: "[]map[string]interface{}"
+striped: bool
+hoverable: bool
+bordered: bool
+compact: bool
+loading: bool
+emptyMessage: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+  <table class="min-w-full divide-y divide-gray-300 {if props.striped}table-striped{end} {if props.hoverable}table-hover{end} {if props.bordered}table-bordered{end} {if props.compact}table-compact{end}">
+    <thead class="bg-gray-50">
+      <tr>
+        <for items="{props.columns}" as="col">
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider {if col.Width}w-{col.Width}{end} {if col.Align == 'center'}text-center{else if col.Align == 'right'}text-right{end}">
+            {col.Label}
+          </th>
+        </for>
+      </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+      <if condition="{props.loading}">
+        <tr>
+          <td colspan="{len(props.columns)}" class="px-6 py-12 text-center">
+            <div class="flex justify-center">
+              <svg class="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">Loading...</p>
+          </td>
+        </tr>
+      <else if condition="{len(props.data) == 0}">
+        <tr>
+          <td colspan="{len(props.columns)}" class="px-6 py-12 text-center">
+            <div class="text-gray-500">
+              <i class="fas fa-inbox text-4xl mb-4"></i>
+              <p class="text-sm">{if props.emptyMessage}{props.emptyMessage}{else}No data available{end}</p>
+            </div>
+          </td>
+        </tr>
+      <else>
+        <for items="{props.data}" as="row">
+          <tr class="hover:bg-gray-50">
+            <for items="{props.columns}" as="col">
+              <td class="px-6 py-4 whitespace-nowrap text-sm {if col.Align == 'center'}text-center{else if col.Align == 'right'}text-right{else}text-left{end}">
+                <TableCell column="{col}" value="{row[col.Key]}" row="{row}"></TableCell>
+              </td>
+            </for>
+          </tr>
+        </for>
+      </if>
+    </tbody>
+  </table>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "TableCell" -->
+<!-- | define "props" -->
+column: t.TableColumn
+value: "interface{}"
+row: "map[string]interface{}"
+<!-- | end -->
+<!-- | define "html" -->
+<if condition="{props.column.Type == 'avatar'}">
+  <div class="flex items-center">
+    <Avatar src="{fmt.Sprintf('%v', props.row['avatar'])}" name="{fmt.Sprintf('%v', props.value)}" size="sm"></Avatar>
+    <div class="ml-3">
+      <p class="text-sm font-medium text-gray-900">{fmt.Sprintf("%v", props.value)}</p>
+      <if condition="{props.row['email'] != nil}">
+        <p class="text-sm text-gray-500">{fmt.Sprintf("%v", props.row['email'])}</p>
+      </if>
+    </div>
+  </div>
+<else if condition="{props.column.Type == 'badge'}">
+  <Badge text="{fmt.Sprintf('%v', props.value)}" variant="{getBadgeVariant(fmt.Sprintf('%v', props.value))}"></Badge>
+<else if condition="{props.column.Type == 'date'}">
+  <span class="text-gray-900">{formatDate(props.value)}</span>
+<else if condition="{props.column.Type == 'number'}">
+  <span class="text-gray-900 font-mono">{formatNumber(props.value)}</span>
+<else if condition="{props.column.Type == 'currency'}">
+  <span class="text-gray-900 font-mono">{formatCurrency(props.value)}</span>
+<else if condition="{props.column.Type == 'boolean'}">
+  <if condition="{fmt.Sprintf('%v', props.value) == 'true'}">
+    <i class="fas fa-check-circle text-green-500"></i>
+  <else>
+    <i class="fas fa-times-circle text-red-500"></i>
+  </if>
+<else if condition="{props.column.Type == 'actions'}">
+  <div class="flex space-x-2">
+    <button class="text-indigo-600 hover:text-indigo-900 text-sm" onclick="editItem('{props.row['id']}')">
+      <i class="fas fa-edit"></i>
+    </button>
+    <button class="text-red-600 hover:text-red-900 text-sm" onclick="deleteItem('{props.row['id']}')">
+      <i class="fas fa-trash"></i>
+    </button>
+  </div>
+<else>
+  <span class="text-gray-900">{fmt.Sprintf("%v", props.value)}</span>
+</if>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "Pagination" -->
+<!-- | define "props" -->
+currentPage: int
+totalPages: int
+totalItems: int
+itemsPerPage: int
+showInfo: bool
+<!-- | end -->
+<!-- | define "html" -->
+<div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+  <if condition="{props.showInfo}">
+    <div class="flex-1 flex justify-between sm:hidden">
+      <if condition="{props.currentPage > 1}">
+        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" onclick="goToPage({props.currentPage - 1})">
+          Previous
+        </button>
+      </if>
+      <if condition="{props.currentPage < props.totalPages}">
+        <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" onclick="goToPage({props.currentPage + 1})">
+          Next
+        </button>
+      </if>
+    </div>
+    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+      <div>
+        <p class="text-sm text-gray-700">
+          Showing
+          <span class="font-medium">{(props.currentPage - 1) * props.itemsPerPage + 1}</span>
+          to
+          <span class="font-medium">{min(props.currentPage * props.itemsPerPage, props.totalItems)}</span>
+          of
+          <span class="font-medium">{props.totalItems}</span>
+          results
+        </p>
+      </div>
+      <div>
+        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+          <if condition="{props.currentPage > 1}">
+            <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50" onclick="goToPage({props.currentPage - 1})">
+              <span class="sr-only">Previous</span>
+              <i class="fas fa-chevron-left"></i>
+            </button>
+          </if>
+          
+          <for items="{getPaginationRange(props.currentPage, props.totalPages)}" as="page">
+            <if condition="{page == props.currentPage}">
+              <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-indigo-50 text-sm font-medium text-indigo-600">
+                {page}
+              </span>
+            <else if condition="{page == -1}">
+              <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                ...
+              </span>
+            <else>
+              <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50" onclick="goToPage({page})">
+                {page}
+              </button>
+            </if>
+          </for>
+          
+          <if condition="{props.currentPage < props.totalPages}">
+            <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50" onclick="goToPage({props.currentPage + 1})">
+              <span class="sr-only">Next</span>
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </if>
+        </nav>
+      </div>
+    </div>
+  </if>
+</div>
+<!-- | end -->
+<!-- + end -->

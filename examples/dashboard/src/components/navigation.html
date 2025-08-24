@@ -1,0 +1,249 @@
+<!-- * define "imports" -->
+t "github.com/abdheshnayak/gohtmlx/examples/dashboard/src/types"
+"fmt"
+<!-- * end -->
+
+<!-- + define "Sidebar" -->
+<!-- | define "props" -->
+navigation: "[]t.NavigationItem"
+user: t.User
+collapsed: bool
+<!-- | end -->
+<!-- | define "html" -->
+<div class="sidebar flex flex-col w-64 bg-gray-800 border-r border-gray-200 pt-5 pb-4 overflow-y-auto" data-collapsed="{props.collapsed}">
+  <div class="flex items-center flex-shrink-0 px-4">
+    <if condition="{!props.collapsed}">
+      <img class="h-8 w-auto" src="/static/images/logo.svg" alt="Dashboard">
+      <span class="ml-2 text-xl font-semibold text-white">Dashboard</span>
+    <else>
+      <img class="h-8 w-8" src="/static/images/logo-icon.svg" alt="D">
+    </if>
+  </div>
+  
+  <nav class="mt-8 flex-1 px-2 space-y-1">
+    <for items="{props.navigation}" as="item">
+      <NavigationItem item="{item}" collapsed="{props.collapsed}"></NavigationItem>
+    </for>
+  </nav>
+  
+  <div class="flex-shrink-0 px-4">
+    <UserProfile user="{props.user}" collapsed="{props.collapsed}"></UserProfile>
+  </div>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "NavigationItem" -->
+<!-- | define "props" -->
+item: t.NavigationItem
+collapsed: bool
+<!-- | end -->
+<!-- | define "html" -->
+<div>
+  <if condition="{len(props.item.Children) > 0}">
+    <!-- Navigation group with children -->
+    <button class="nav-item nav-group group w-full flex items-center pl-2 pr-1 py-2 text-left text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" onclick="toggleNavGroup('{props.item.ID}')" data-active="{props.item.Active}">
+      <if condition="{props.item.Icon != ''}">
+        <i class="{props.item.Icon} text-gray-300 group-hover:text-white mr-3 flex-shrink-0 h-5 w-5" data-active="{props.item.Active}"></i>
+      </if>
+      <if condition="{!props.collapsed}">
+        <span class="flex-1 text-gray-300 group-hover:text-white" data-active="{props.item.Active}">{props.item.Label}</span>
+        <if condition="{props.item.Badge != ''}">
+          <span class="ml-3 inline-block py-0.5 px-2 text-xs font-medium rounded-full bg-gray-600 text-gray-300">
+            {props.item.Badge}
+          </span>
+        </if>
+        <i class="fas fa-chevron-right text-gray-300 group-hover:text-white ml-2 h-4 w-4 transform group-hover:rotate-90 transition-transform" data-active="{props.item.Active}"></i>
+      </if>
+    </button>
+    <if condition="{!props.collapsed}">
+      <div class="nav-submenu mt-1 space-y-1" id="nav-group-{props.item.ID}">
+        <for items="{props.item.Children}" as="child">
+          <a href="{child.URL}" class="nav-subitem group w-full flex items-center pl-11 pr-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white" data-active="{child.Active}">
+            {child.Label}
+            <if condition="{child.Badge != ''}">
+              <span class="ml-auto inline-block py-0.5 px-2 text-xs font-medium rounded-full bg-gray-600 text-gray-300">
+                {child.Badge}
+              </span>
+            </if>
+          </a>
+        </for>
+      </div>
+    </if>
+  <else>
+    <!-- Simple navigation item -->
+    <a href="{props.item.URL}" class="nav-item group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white" data-active="{props.item.Active}">
+      <if condition="{props.item.Icon != ''}">
+        <i class="{props.item.Icon} text-gray-300 group-hover:text-white mr-3 flex-shrink-0 h-5 w-5" data-active="{props.item.Active}"></i>
+      </if>
+      <if condition="{!props.collapsed}">
+        <span class="flex-1">{props.item.Label}</span>
+        <if condition="{props.item.Badge != ''}">
+          <span class="ml-3 inline-block py-0.5 px-2 text-xs font-medium rounded-full bg-gray-600 text-gray-300">
+            {props.item.Badge}
+          </span>
+        </if>
+      </if>
+    </a>
+  </if>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "TopBar" -->
+<!-- | define "props" -->
+user: t.User
+notifications: "[]t.Notification"
+searchPlaceholder: string
+showSearch: bool
+showNotifications: bool
+<!-- | end -->
+<!-- | define "html" -->
+<header class="bg-white shadow-sm border-b border-gray-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center py-4">
+      <div class="flex items-center">
+        <button type="button" class="text-gray-500 hover:text-gray-600 lg:hidden" onclick="toggleSidebar()">
+          <i class="fas fa-bars h-6 w-6"></i>
+        </button>
+        <button type="button" class="ml-4 text-gray-500 hover:text-gray-600 hidden lg:block" onclick="toggleSidebarCollapse()">
+          <i class="fas fa-bars h-5 w-5"></i>
+        </button>
+      </div>
+      
+      <if condition="{props.showSearch}">
+        <div class="flex-1 max-w-lg mx-8">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input type="text" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500" placeholder="{if props.searchPlaceholder}{props.searchPlaceholder}{else}Search...{end}">
+          </div>
+        </div>
+      </if>
+      
+      <div class="flex items-center space-x-4">
+        <if condition="{props.showNotifications}">
+          <div class="relative">
+            <button type="button" class="p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full" onclick="toggleNotifications()">
+              <i class="fas fa-bell h-5 w-5"></i>
+              <if condition="{getUnreadNotificationCount(props.notifications) > 0}">
+                <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white"></span>
+              </if>
+            </button>
+            <NotificationDropdown notifications="{props.notifications}"></NotificationDropdown>
+          </div>
+        </if>
+        
+        <div class="relative">
+          <button type="button" class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" onclick="toggleUserMenu()">
+            <Avatar src="{props.user.Avatar}" name="{props.user.Name}" size="sm" status="{getStatusFromUser(props.user)}"></Avatar>
+            <span class="ml-3 text-gray-700 text-sm font-medium hidden lg:block">{props.user.Name}</span>
+            <i class="fas fa-chevron-down ml-2 h-4 w-4 text-gray-400 hidden lg:block"></i>
+          </button>
+          <UserDropdown user="{props.user}"></UserDropdown>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "UserProfile" -->
+<!-- | define "props" -->
+user: t.User
+collapsed: bool
+<!-- | end -->
+<!-- | define "html" -->
+<div class="flex items-center">
+  <div class="flex-shrink-0">
+    <Avatar src="{props.user.Avatar}" name="{props.user.Name}" size="sm" status="{getStatusFromUser(props.user)}"></Avatar>
+  </div>
+  <if condition="{!props.collapsed}">
+    <div class="ml-3">
+      <p class="text-sm font-medium text-white">{props.user.Name}</p>
+      <p class="text-xs text-gray-300">{props.user.Role}</p>
+    </div>
+  </if>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "NotificationDropdown" -->
+<!-- | define "props" -->
+notifications: "[]t.Notification"
+<!-- | end -->
+<!-- | define "html" -->
+<div class="notification-dropdown absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50 hidden">
+  <div class="py-1">
+    <div class="px-4 py-2 border-b border-gray-200">
+      <h3 class="text-sm font-medium text-gray-900">Notifications</h3>
+    </div>
+    <div class="max-h-64 overflow-y-auto">
+      <if condition="{len(props.notifications) == 0}">
+        <div class="px-4 py-8 text-center">
+          <i class="fas fa-bell-slash text-gray-300 text-2xl mb-2"></i>
+          <p class="text-sm text-gray-500">No notifications</p>
+        </div>
+      <else>
+        <for items="{props.notifications}" as="notification">
+          <div class="px-4 py-3 hover:bg-gray-50 {if !notification.Read}bg-blue-50{end}">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <div class="w-2 h-2 mt-2 rounded-full {getNotificationColor(notification.Type)}"></div>
+              </div>
+              <div class="ml-3 w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900">{notification.Title}</p>
+                <p class="text-sm text-gray-500">{notification.Message}</p>
+                <p class="text-xs text-gray-400 mt-1">{formatTimeAgo(notification.Timestamp)}</p>
+              </div>
+            </div>
+          </div>
+        </for>
+      </if>
+    </div>
+    <if condition="{len(props.notifications) > 0}">
+      <div class="px-4 py-2 border-t border-gray-200">
+        <button class="text-sm text-indigo-600 hover:text-indigo-500 font-medium" onclick="markAllAsRead()">
+          Mark all as read
+        </button>
+      </div>
+    </if>
+  </div>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "UserDropdown" -->
+<!-- | define "props" -->
+user: t.User
+<!-- | end -->
+<!-- | define "html" -->
+<div class="user-dropdown absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50 hidden">
+  <div class="py-1">
+    <div class="px-4 py-2 border-b border-gray-200">
+      <p class="text-sm font-medium text-gray-900">{props.user.Name}</p>
+      <p class="text-xs text-gray-500">{props.user.Email}</p>
+    </div>
+    <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+      <i class="fas fa-user mr-2"></i>
+      Your Profile
+    </a>
+    <a href="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+      <i class="fas fa-cog mr-2"></i>
+      Settings
+    </a>
+    <a href="/help" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+      <i class="fas fa-question-circle mr-2"></i>
+      Help
+    </a>
+    <div class="border-t border-gray-200"></div>
+    <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+      <i class="fas fa-sign-out-alt mr-2"></i>
+      Sign out
+    </a>
+  </div>
+</div>
+<!-- | end -->
+<!-- + end -->

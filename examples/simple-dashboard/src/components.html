@@ -1,0 +1,226 @@
+<!-- * define "imports" -->
+"fmt"
+<!-- * end -->
+
+<!-- + define "Button" -->
+<!-- | define "props" -->
+text: string
+variant: string
+onclick: string
+<!-- | end -->
+<!-- | define "html" -->
+<button type="button" class="btn btn-{props.variant}" onclick="{props.onclick}">
+  {props.text}
+</button>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "Card" -->
+<!-- | define "props" -->
+title: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">{props.title}</h3>
+  </div>
+  <div class="card-body">
+    {children}
+  </div>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "StatCard" -->
+<!-- | define "props" -->
+title: string
+value: string
+icon: string
+color: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="stat-card stat-{props.color}">
+  <div class="stat-icon">
+    <i class="{props.icon}"></i>
+  </div>
+  <div class="stat-content">
+    <div class="stat-value">{props.value}</div>
+    <div class="stat-title">{props.title}</div>
+  </div>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "Dashboard" -->
+<!-- | define "props" -->
+Title: string
+TotalUsers: int
+ActiveUsers: int
+Revenue: float64
+Growth: float64
+<!-- | end -->
+<!-- | define "html" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{props.Title}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .btn {
+            @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+        .btn-primary {
+            @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+        }
+        .btn-secondary {
+            @apply bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500;
+        }
+        .btn-success {
+            @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+        }
+        
+        .card {
+            @apply bg-white rounded-lg border border-gray-200 shadow-sm;
+        }
+        .card-header {
+            @apply px-6 py-4 border-b border-gray-200;
+        }
+        .card-title {
+            @apply text-lg font-medium text-gray-900;
+        }
+        .card-body {
+            @apply p-6;
+        }
+        
+        .stat-card {
+            @apply bg-white rounded-lg border border-gray-200 shadow-sm p-6;
+        }
+        .stat-card {
+            @apply flex items-center space-x-4;
+        }
+        .stat-icon {
+            @apply w-12 h-12 rounded-full flex items-center justify-center;
+        }
+        .stat-blue .stat-icon {
+            @apply bg-blue-100 text-blue-600;
+        }
+        .stat-green .stat-icon {
+            @apply bg-green-100 text-green-600;
+        }
+        .stat-purple .stat-icon {
+            @apply bg-purple-100 text-purple-600;
+        }
+        .stat-orange .stat-icon {
+            @apply bg-orange-100 text-orange-600;
+        }
+        .stat-value {
+            @apply text-2xl font-bold text-gray-900;
+        }
+        .stat-title {
+            @apply text-sm font-medium text-gray-500;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">{props.Title}</h1>
+            <p class="text-gray-600 mt-2">Welcome to your GoHTMLX dashboard</p>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <StatCard
+                title="Total Users"
+                value="{fmt.Sprintf(\"%d\", props.TotalUsers)}"
+                icon="fas fa-users"
+                color="blue">
+            </StatCard>
+            
+            <StatCard
+                title="Active Users"
+                value="{fmt.Sprintf(\"%d\", props.ActiveUsers)}"
+                icon="fas fa-user-check"
+                color="green">
+            </StatCard>
+            
+            <StatCard
+                title="Revenue"
+                value="{fmt.Sprintf(\"$%.2f\", props.Revenue)}"
+                icon="fas fa-dollar-sign"
+                color="purple">
+            </StatCard>
+            
+            <StatCard
+                title="Growth"
+                value="{fmt.Sprintf(\"%.1f%%\", props.Growth)}"
+                icon="fas fa-chart-line"
+                color="orange">
+            </StatCard>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card title="Welcome">
+                <p class="text-gray-600 mb-4">
+                    This is a working GoHTMLX dashboard example that demonstrates:
+                </p>
+                <ul class="text-gray-600 mb-6 space-y-2">
+                    <li>• Server-side rendering with Go</li>
+                    <li>• Type-safe component props</li>
+                    <li>• Responsive design with Tailwind CSS</li>
+                    <li>• Interactive JavaScript components</li>
+                </ul>
+                <Button 
+                    text="Get Started" 
+                    variant="primary" 
+                    onclick="showAlert('Welcome to GoHTMLX!')">
+                </Button>
+            </Card>
+            
+            <Card title="Quick Actions">
+                <p class="text-gray-600 mb-4">Try these interactive features:</p>
+                <div class="space-y-3">
+                    <Button 
+                        text="Show Stats" 
+                        variant="secondary" 
+                        onclick="showStats()">
+                    </Button>
+                    <Button 
+                        text="Refresh Data" 
+                        variant="success" 
+                        onclick="refreshData()">
+                    </Button>
+                </div>
+            </Card>
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-12 text-center text-gray-500">
+            <p>Built with ❤️ using GoHTMLX - The modern way to build server-side rendered web applications with Go</p>
+        </div>
+    </div>
+    
+    <script>
+        function showAlert(message) {
+            alert(message);
+        }
+        
+        function showStats() {
+            alert('Stats: {fmt.Sprintf(\"%d total users, %d active users, $%.2f revenue\", props.TotalUsers, props.ActiveUsers, props.Revenue)}');
+        }
+        
+        function refreshData() {
+            alert('Data refreshed! (In a real app, this would reload the page or fetch new data)');
+            // In a real application, you might reload the page or use HTMX to fetch new data
+            // window.location.reload();
+        }
+    </script>
+</body>
+</html>
+<!-- | end -->
+<!-- + end -->

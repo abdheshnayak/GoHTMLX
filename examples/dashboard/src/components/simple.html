@@ -1,0 +1,143 @@
+<!-- * define "imports" -->
+t "github.com/abdheshnayak/gohtmlx/examples/dashboard/src/types"
+"fmt"
+<!-- * end -->
+
+<!-- + define "SimpleButton" -->
+<!-- | define "props" -->
+text: string
+variant: string
+onclick: string
+<!-- | end -->
+<!-- | define "html" -->
+<button type="button" class="btn btn-{props.variant} inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2" onclick="{props.onclick}">
+  {props.text}
+</button>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "SimpleCard" -->
+<!-- | define "props" -->
+title: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h3 class="text-lg font-medium text-gray-900">{props.title}</h3>
+  </div>
+  <div class="p-6">
+    {children}
+  </div>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "SimpleStats" -->
+<!-- | define "props" -->
+title: string
+value: string
+icon: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
+  <div class="p-5">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+          <i class="{props.icon} text-blue-600"></i>
+        </div>
+      </div>
+      <div class="ml-5 w-0 flex-1">
+        <dl>
+          <dt class="text-sm font-medium text-gray-500 truncate">{props.title}</dt>
+          <dd class="text-2xl font-semibold text-gray-900">{props.value}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "SimplePage" -->
+<!-- | define "props" -->
+title: string
+stats: t.DashboardStats
+<!-- | end -->
+<!-- | define "html" -->
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{props.title}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .btn { @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2; }
+        .btn-primary { @apply bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500; }
+        .btn-secondary { @apply bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500; }
+    </style>
+</head>
+<body class="h-full bg-gray-50">
+    <div class="min-h-full">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <h1 class="text-2xl font-bold text-gray-900">{props.title}</h1>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="px-4 py-6 sm:px-0">
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+                    <SimpleStats
+                        title="Total Users"
+                        value="{fmt.Sprintf('%d', props.stats.TotalUsers)}"
+                        icon="fas fa-users">
+                    </SimpleStats>
+                    
+                    <SimpleStats
+                        title="Active Users"
+                        value="{fmt.Sprintf('%d', props.stats.ActiveUsers)}"
+                        icon="fas fa-user-check">
+                    </SimpleStats>
+                    
+                    <SimpleStats
+                        title="Revenue"
+                        value="{fmt.Sprintf('$%.2f', props.stats.Revenue)}"
+                        icon="fas fa-dollar-sign">
+                    </SimpleStats>
+                    
+                    <SimpleStats
+                        title="Growth"
+                        value="{fmt.Sprintf('%.1f%%', props.stats.Growth)}"
+                        icon="fas fa-chart-line">
+                    </SimpleStats>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <SimpleCard title="Dashboard Overview">
+                        <p class="text-gray-600 mb-4">Welcome to your dashboard! This is a simplified version that demonstrates GoHTMLX capabilities without complex conditional logic.</p>
+                        <SimpleButton text="View Details" variant="primary" onclick="alert('Button clicked!')"></SimpleButton>
+                    </SimpleCard>
+                    
+                    <SimpleCard title="Quick Actions">
+                        <div class="space-y-3">
+                            <SimpleButton text="Add User" variant="primary" onclick="alert('Add User clicked!')"></SimpleButton>
+                            <SimpleButton text="Generate Report" variant="secondary" onclick="alert('Generate Report clicked!')"></SimpleButton>
+                        </div>
+                    </SimpleCard>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+<!-- | end -->
+<!-- + end -->

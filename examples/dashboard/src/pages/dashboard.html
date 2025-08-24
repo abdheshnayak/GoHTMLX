@@ -1,0 +1,258 @@
+<!-- * define "imports" -->
+t "github.com/abdheshnayak/gohtmlx/examples/dashboard/src/types"
+"fmt"
+"time"
+<!-- * end -->
+
+<!-- + define "DashboardPage" -->
+<!-- | define "props" -->
+stats: t.DashboardStats
+users: "[]t.User"
+recentActivity: "[]map[string]interface{}"
+chartData: "[]t.ChartData"
+<!-- | end -->
+<!-- | define "html" -->
+<Layout 
+    title="Dashboard Overview"
+    user="{getCurrentUser()}"
+    navigation="{getNavigation()}"
+    notifications="{getNotifications()}"
+    showSearch="true">
+    
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <StatCard
+            title="Total Users"
+            value="{fmt.Sprintf('%d', props.stats.TotalUsers)}"
+            change="{fmt.Sprintf('+%.1f%%', props.stats.Growth)}"
+            changeType="positive"
+            icon="fas fa-users"
+            color="blue">
+        </StatCard>
+        
+        <StatCard
+            title="Active Users"
+            value="{fmt.Sprintf('%d', props.stats.ActiveUsers)}"
+            change="{fmt.Sprintf('%.1f%%', float64(props.stats.ActiveUsers)/float64(props.stats.TotalUsers)*100)}"
+            changeType="positive"
+            icon="fas fa-user-check"
+            color="green">
+        </StatCard>
+        
+        <StatCard
+            title="Revenue"
+            value="{fmt.Sprintf('$%.2f', props.stats.Revenue)}"
+            change="{fmt.Sprintf('+%.1f%%', props.stats.Growth)}"
+            changeType="positive"
+            icon="fas fa-dollar-sign"
+            color="indigo">
+        </StatCard>
+        
+        <StatCard
+            title="Conversion Rate"
+            value="{fmt.Sprintf('%.1f%%', props.stats.ConversionRate)}"
+            change="+2.1%"
+            changeType="positive"
+            icon="fas fa-chart-line"
+            color="purple">
+        </StatCard>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Chart -->
+        <Card title="Revenue Trends" icon="fas fa-chart-area" hover="true">
+            <div class="h-80">
+                <canvas id="revenueChart" class="w-full h-full"></canvas>
+            </div>
+        </Card>
+        
+        <!-- User Activity -->
+        <Card title="User Distribution" icon="fas fa-chart-pie" hover="true">
+            <div class="h-80">
+                <canvas id="userChart" class="w-full h-full"></canvas>
+            </div>
+        </Card>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Recent Users -->
+        <div class="lg:col-span-2">
+            <Card title="Recent Users" icon="fas fa-users" hover="true">
+                <UserTable users="{props.users}" showActions="true"></UserTable>
+            </Card>
+        </div>
+        
+        <!-- Activity Feed -->
+        <div>
+            <Card title="Recent Activity" icon="fas fa-clock" hover="true">
+                <ActivityFeed activities="{props.recentActivity}"></ActivityFeed>
+            </Card>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="mt-8">
+        <Card title="Quick Actions" icon="fas fa-bolt">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <QuickAction
+                    title="Add User"
+                    description="Create a new user account"
+                    icon="fas fa-user-plus"
+                    color="blue"
+                    onclick="openAddUserModal()">
+                </QuickAction>
+                
+                <QuickAction
+                    title="Generate Report"
+                    description="Create analytics report"
+                    icon="fas fa-file-alt"
+                    color="green"
+                    onclick="generateReport()">
+                </QuickAction>
+                
+                <QuickAction
+                    title="System Settings"
+                    description="Configure system options"
+                    icon="fas fa-cog"
+                    color="gray"
+                    href="/settings">
+                </QuickAction>
+                
+                <QuickAction
+                    title="View Logs"
+                    description="Check system logs"
+                    icon="fas fa-list"
+                    color="orange"
+                    href="/logs">
+                </QuickAction>
+            </div>
+        </Card>
+    </div>
+    
+    <script>
+        // Initialize charts when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts({
+                revenueData: {props.chartData},
+                userStats: {
+                    total: {props.stats.TotalUsers},
+                    active: {props.stats.ActiveUsers},
+                    inactive: {props.stats.TotalUsers - props.stats.ActiveUsers}
+                }
+            });
+        });
+    </script>
+</Layout>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "UserTable" -->
+<!-- | define "props" -->
+users: "[]t.User"
+showActions: bool
+compact: bool
+<!-- | end -->
+<!-- | define "html" -->
+<Table
+    columns="{getUserTableColumns(props.showActions)}"
+    data="{formatUsersForTable(props.users)}"
+    striped="true"
+    hoverable="true"
+    compact="{props.compact}">
+</Table>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "ActivityFeed" -->
+<!-- | define "props" -->
+activities: "[]map[string]interface{}"
+<!-- | end -->
+<!-- | define "html" -->
+<div class="flow-root">
+    <ul class="-mb-8">
+        <for items="{props.activities}" as="activity" index="i">
+            <li>
+                <div class="relative pb-8">
+                    <if condition="{i < len(props.activities) - 1}">
+                        <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                    </if>
+                    <div class="relative flex space-x-3">
+                        <div>
+                            <span class="h-8 w-8 rounded-full {getActivityColor(activity['type'])} flex items-center justify-center ring-8 ring-white">
+                                <i class="{getActivityIcon(activity['type'])} h-4 w-4 text-white"></i>
+                            </span>
+                        </div>
+                        <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                            <div>
+                                <p class="text-sm text-gray-500">
+                                    <span class="font-medium text-gray-900">{activity['user']}</span>
+                                    {activity['action']}
+                                    <if condition="{activity['target'] != ''}">
+                                        <span class="font-medium text-gray-900">{activity['target']}</span>
+                                    </if>
+                                </p>
+                            </div>
+                            <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                <time>{formatTimeAgo(activity['timestamp'])}</time>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </for>
+    </ul>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- + define "QuickAction" -->
+<!-- | define "props" -->
+title: string
+description: string
+icon: string
+color: string
+onclick: string
+href: string
+<!-- | end -->
+<!-- | define "html" -->
+<if condition="{props.href != ''}">
+    <a href="{props.href}" class="group relative bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+        <div>
+            <span class="rounded-lg inline-flex p-3 bg-{props.color}-50 text-{props.color}-700 ring-4 ring-white">
+                <i class="{props.icon} h-6 w-6"></i>
+            </span>
+        </div>
+        <div class="mt-4">
+            <h3 class="text-lg font-medium text-gray-900 group-hover:text-indigo-600">
+                {props.title}
+            </h3>
+            <p class="mt-2 text-sm text-gray-500">
+                {props.description}
+            </p>
+        </div>
+        <span class="pointer-events-none absolute top-6 right-6 text-gray-300 group-hover:text-gray-400" aria-hidden="true">
+            <i class="fas fa-arrow-right h-6 w-6"></i>
+        </span>
+    </a>
+<else>
+    <button type="button" onclick="{props.onclick}" class="group relative bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors w-full text-left">
+        <div>
+            <span class="rounded-lg inline-flex p-3 bg-{props.color}-50 text-{props.color}-700 ring-4 ring-white">
+                <i class="{props.icon} h-6 w-6"></i>
+            </span>
+        </div>
+        <div class="mt-4">
+            <h3 class="text-lg font-medium text-gray-900 group-hover:text-indigo-600">
+                {props.title}
+            </h3>
+            <p class="mt-2 text-sm text-gray-500">
+                {props.description}
+            </p>
+        </div>
+        <span class="pointer-events-none absolute top-6 right-6 text-gray-300 group-hover:text-gray-400" aria-hidden="true">
+            <i class="fas fa-arrow-right h-6 w-6"></i>
+        </span>
+    </button>
+</if>
+<!-- | end -->
+<!-- + end -->

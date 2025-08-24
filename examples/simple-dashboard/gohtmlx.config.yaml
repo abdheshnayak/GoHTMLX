@@ -1,0 +1,27 @@
+# GoHTMLX Configuration for Simple Dashboard Example
+source_dir: "src"
+output_dir: "dist"
+package_name: "gohtmlxc"
+log_level: "info"
+
+watch:
+  enabled: true
+  extensions: [".html", ".htm"]
+  ignore_files: ["*.tmp", ".*", "*.backup"]
+  debounce_ms: 300
+
+template:
+  start_delim: "<!-- +"
+  end_delim: " -->"
+  prop_delim: "<!-- |"
+  prop_end: " -->"
+
+generation:
+  format_code: true
+  add_comments: true
+  import_path: "github.com/abdheshnayak/gohtmlx/pkg/element"
+  element_package: "element"
+
+extensions:
+  ".html": "html"
+  ".htm": "html"

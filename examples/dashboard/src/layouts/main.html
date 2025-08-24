@@ -1,0 +1,249 @@
+<!-- * define "imports" -->
+t "github.com/abdheshnayak/gohtmlx/examples/dashboard/src/types"
+"fmt"
+<!-- * end -->
+
+<!-- + define "Layout" -->
+<!-- | define "props" -->
+title: string
+user: t.User
+navigation: "[]t.NavigationItem"
+notifications: "[]t.Notification"
+sidebarCollapsed: bool
+showSearch: bool
+breadcrumbs: "[]map[string]string"
+pageActions: "[]map[string]string"
+<!-- | end -->
+<!-- | define "html" -->
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{if props.title}{props.title} - Dashboard{else}Dashboard{end}</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* Custom component styles */
+        .btn {
+            @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+        .btn-primary {
+            @apply bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500;
+        }
+        .btn-secondary {
+            @apply bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500;
+        }
+        .btn-success {
+            @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+        }
+        .btn-warning {
+            @apply bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-yellow-500;
+        }
+        .btn-danger {
+            @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+        }
+        .btn-ghost {
+            @apply bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500;
+        }
+        .btn-sm {
+            @apply px-3 py-1.5 text-sm;
+        }
+        .btn-lg {
+            @apply px-6 py-3 text-lg;
+        }
+        .btn-disabled {
+            @apply opacity-50 cursor-not-allowed;
+        }
+        
+        .badge {
+            @apply inline-flex items-center font-medium;
+        }
+        .badge-primary {
+            @apply bg-indigo-100 text-indigo-800;
+        }
+        .badge-secondary {
+            @apply bg-gray-100 text-gray-800;
+        }
+        .badge-success {
+            @apply bg-green-100 text-green-800;
+        }
+        .badge-warning {
+            @apply bg-yellow-100 text-yellow-800;
+        }
+        .badge-danger {
+            @apply bg-red-100 text-red-800;
+        }
+        
+        .avatar {
+            @apply inline-block rounded-full;
+        }
+        .avatar-sm {
+            @apply h-8 w-8;
+        }
+        .avatar-md {
+            @apply h-10 w-10;
+        }
+        .avatar-lg {
+            @apply h-12 w-12;
+        }
+        
+        .status-online {
+            @apply bg-green-400;
+        }
+        .status-offline {
+            @apply bg-gray-400;
+        }
+        .status-away {
+            @apply bg-yellow-400;
+        }
+        .status-busy {
+            @apply bg-red-400;
+        }
+        
+        .form-input {
+            @apply rounded-md shadow-sm;
+        }
+        
+        .sidebar-collapsed {
+            @apply w-16;
+        }
+        
+        .modal-open {
+            @apply block;
+        }
+        
+        .nav-item {
+            @apply transition-colors duration-200;
+        }
+        
+        .nav-active {
+            @apply bg-gray-900 text-white;
+        }
+        
+        .table-striped tbody tr:nth-child(even) {
+            @apply bg-gray-50;
+        }
+        
+        .table-hover tbody tr:hover {
+            @apply bg-gray-50;
+        }
+        
+        .table-bordered {
+            @apply border border-gray-200;
+        }
+        
+        .table-bordered th,
+        .table-bordered td {
+            @apply border border-gray-200;
+        }
+        
+        .table-compact th,
+        .table-compact td {
+            @apply px-3 py-2;
+        }
+    </style>
+</head>
+<body class="h-full">
+    <div class="min-h-full">
+        <div class="flex">
+            <!-- Sidebar -->
+            <Sidebar navigation="{props.navigation}" user="{props.user}" collapsed="{props.sidebarCollapsed}"></Sidebar>
+            
+            <!-- Main content -->
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <!-- Top navigation -->
+                <TopBar user="{props.user}" notifications="{props.notifications}" showSearch="{props.showSearch}" showNotifications="true"></TopBar>
+                
+                <!-- Page header -->
+                <if condition="{props.title != '' || len(props.breadcrumbs) > 0 || len(props.pageActions) > 0}">
+                    <div class="bg-white shadow-sm border-b border-gray-200">
+                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div class="py-6">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex-1 min-w-0">
+                                        <if condition="{len(props.breadcrumbs) > 0}">
+                                            <nav class="flex mb-2" aria-label="Breadcrumb">
+                                                <ol class="flex items-center space-x-4">
+                                                    <for items="{props.breadcrumbs}" as="crumb" index="i">
+                                                        <li class="flex">
+                                                            <if condition="{i > 0}">
+                                                                <div class="flex items-center">
+                                                                    <i class="fas fa-chevron-right flex-shrink-0 h-4 w-4 text-gray-400 mr-4"></i>
+                                                                </div>
+                                                            </if>
+                                                            <if condition="{crumb['url'] != ''}">
+                                                                <a href="{crumb['url']}" class="text-sm font-medium text-gray-500 hover:text-gray-700">
+                                                                    {crumb['label']}
+                                                                </a>
+                                                            <else>
+                                                                <span class="text-sm font-medium text-gray-900">
+                                                                    {crumb['label']}
+                                                                </span>
+                                                            </if>
+                                                        </li>
+                                                    </for>
+                                                </ol>
+                                            </nav>
+                                        </if>
+                                        <if condition="{props.title != ''}">
+                                            <h1 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                                                {props.title}
+                                            </h1>
+                                        </if>
+                                    </div>
+                                    <if condition="{len(props.pageActions) > 0}">
+                                        <div class="flex ml-4 mt-0">
+                                            <for items="{props.pageActions}" as="action">
+                                                <Button 
+                                                    text="{action['label']}" 
+                                                    variant="{action['variant']}" 
+                                                    icon="{action['icon']}" 
+                                                    onclick="{action['onclick']}"
+                                                    href="{action['href']}">
+                                                </Button>
+                                            </for>
+                                        </div>
+                                    </if>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </if>
+                
+                <!-- Main content area -->
+                <main class="flex-1 relative overflow-y-auto focus:outline-none">
+                    <div class="py-6">
+                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            {children}
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="/static/js/dashboard.js"></script>
+    <script>
+        // Initialize dashboard
+        window.dashboard = new Dashboard();
+    </script>
+</body>
+</html>
+<!-- | end -->
+<!-- + end -->
