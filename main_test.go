@@ -18,7 +18,7 @@ import (
 const updateGoldenEnv = "GOHTMLX_UPDATE_GOLDEN"
 
 func TestRun_DeterministicOutput(t *testing.T) {
-	src := filepath.Join("example", "src", "comps")
+	src := filepath.Join("examples", "showcase", "src", "comps")
 	if _, err := os.Stat(src); err != nil {
 		t.Skipf("example source not found: %v", err)
 	}

@@ -13,10 +13,6 @@ type B struct {
 	Attrs Attrs
 }
 
-type sections struct {
-	Attrs Attrs
-}
-
 func AComp(props A, attrs Attrs, children ...Element) Element {
 
 	props.Attrs = attrs
