@@ -1,8 +1,6 @@
-# GoHTMLX (HTML Components with Go)
+# GoHTMLX — HTML-first server components for Go
 
-## Overview
-
-gohtmlx enables developers to define and render reusable HTML components using Go. This tool is designed for scenarios where basic HTML rendering is needed or for writing purely server-side components. It simplifies creating dynamic HTML by allowing developers to define components in HTML and use them in Go code. Unlike React or JSX, gohtmlx focuses on server-side rendering and is not intended for building client-side interactive applications.
+Write server-side components in HTML, transpile to Go. Modern, type-safe, and framework-agnostic.
 
 ## Try it now
 
@@ -33,19 +31,23 @@ docker run --rm -p 3000:3000 ghcr.io/abdheshnayak/htmlx:example
 
 Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Concepts
+## Features
 
-- **Components** — Defined in `.html` with `<!-- + define "Name" -->` and optional `props` (YAML) and required `html` sections. Transpiled to Go structs and `NameComp(props, attrs, children...)` functions.
-- **Props** — Declared as `name: type` in the props block; used in HTML as `{props.Name}`. Types can be Go built-ins or custom types (with imports).
-- **Control flow** — `<for items={props.Items} as="item">...</for>` for loops; `<if condition={expr}>...</if>`, `<elseif>`, `<else>` for conditionals.
-- **Slots** — Layouts use `<slot name="header"/>`; callers pass `<Layout><slot name="header">...</slot></Layout>`.
-- **Output** — Default: one generated `.go` file per component under `--dist`; `--single-file` emits one `comp_generated.go`.
+Each feature includes a short example. Code is from the GoHTMLX template syntax or CLI.
 
-## Example Usage
+### Quick start
 
-Developers can define reusable components in HTML and use them in their Go applications. Below is an example of defining components and rendering them:
+Install the CLI, point it at your HTML, and use the generated package. Works with any HTTP framework.
 
-### Defining Components
+```bash
+go install github.com/abdheshnayak/gohtmlx@latest
+gohtmlx --src=./src --dist=./dist
+# In your app: import the generated package and call ComponentName{...}.Get().Render(w)
+```
+
+### Define a component
+
+Wrap the component in `<!-- + define "Name" -->` … `<!-- + end -->`. Use `<!-- | define "props" -->` for YAML props and `<!-- | define "html" -->` for the template.
 
 ```html
 <!-- + define "Greet" -->
@@ -53,93 +55,53 @@ Developers can define reusable components in HTML and use them in their Go appli
 name: string
 <!-- | end -->
 <!-- | define "html" -->
-<div>
-  <p>Hello {props.Name}!</p>
-</div>
-<!-- | end -->
-<!-- + end -->
-
----
-
-<!-- + define "Welcome" -->
-<!-- | define "props" -->
-projectName: string
-<!-- | end -->
-
-<!-- | define "html" -->
-<div>
-  <p>Welcome to {props.ProjectName}!</p>
-</div>
-<!-- | end -->
-<!-- + end -->
-
----
-
-<!-- + define "GreetNWelcome" -->
-<!-- | define "props" -->
-name: string
-projectName: string
-<!-- | end -->
-
-<!-- | define "html" -->
-<div>
-  <Greet name={props.Name} ></Greet>
-  <Welcome projectName={props.ProjectName} ></Welcome>
-</div>
+<div>Hello, {props.Name}!</div>
 <!-- | end -->
 <!-- + end -->
 ```
 
-### Conditional rendering
+### Expressions and props
 
-Use `<if>`, `<elseif>`, and `<else>` to show or hide blocks based on props:
+Use `{props.Field}` in the HTML and `attr={value}` for attributes. Pass props when using the component.
 
 ```html
-<if condition={props.ShowFooter}>
-  <footer>...</footer>
+<Greet name={props.UserName}></Greet>
+<p>{props.A} — {props.B}</p>
+```
+
+### Loops
+
+Use `<for items={props.Items} as="item">`. The body is repeated for each element.
+
+```html
+<for items={props.Links} as="link">
+  <li><a href={link.Href}>{link.Label}</a></li>
+</for>
+```
+
+### Conditionals
+
+Use `<if condition={bool}>`, optional `<elseif>`, and `<else>`. Condition must be a boolean expression.
+
+```html
+<if condition={props.ShowHero}>
+  <Hero title={props.Title}></Hero>
 </if>
-<elseif condition={props.ShowAlt}>
-  <div>Alternative</div>
-</elseif>
 <else>
-  <div>Default</div>
+  <p>Default</p>
 </else>
 ```
 
-`condition` is a boolean expression (e.g. `props.ShowFooter`, `len(props.Items) > 0`). It is transpiled to Go `if`/`else` in the generated code.
+### Slots
 
-**Slots:** Layout components can define placeholders with `<slot name="header"/>` (or `name="footer"`, etc.). Callers pass content with `<Layout><slot name="header"><h1>Title</h1></slot></Layout>`. Slots become struct fields (e.g. `SlotHeader Element`) and are rendered as `R(props.SlotHeader)` in the layout.
-
-### Using Components in Go
-
-```go
-package main
-
-import (
-    gc "github.com/abdheshnayak/gohtmlx/example/dist/gohtmlxc"
-)
-
-func main() {
-    gc.GreetNWelcomeProps{
-		Name:        "Developers",
-		ProjectName: "GoHtmlx",
-	}.Get().Render(os.Stdout)
-}
-```
-
-### Rendered HTML
-
-When executed, the rendered HTML will look as follows:
+Layouts declare `<slot name="header"/>`; callers pass `<slot name="header">content</slot>` as direct children.
 
 ```html
-<div>
-    <div>
-        <p>Hello Developers!</p>
-    </div>
-    <div>
-        <p>Welcome to gohtmlx!</p>
-    </div>
-</div>
+<!-- In layout: -->
+<div><header><slot name="header"/></header><main><slot name="body"/></main></div>
+
+<!-- At call site: -->
+<Card><slot name="header">Title</slot><slot name="body">Body</slot></Card>
 ```
 
 ## Usage
