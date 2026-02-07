@@ -19,19 +19,24 @@ import (
 )
 
 func main() {
-
-	src := flag.String("src", "", "source directory")
-	dist := flag.String("dist", "", "destination directory")
-	flag.Parse()
-
-	if src == nil || dist == nil {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage of gohtmlx:\n")
+		fmt.Fprintf(os.Stderr, "  gohtmlx --src=DIR --dist=DIR\n")
+		fmt.Fprintf(os.Stderr, "\n")
 		flag.PrintDefaults()
-		return
+		fmt.Fprintf(os.Stderr, "\nExit codes:\n")
+		fmt.Fprintf(os.Stderr, "  0  success\n")
+		fmt.Fprintf(os.Stderr, "  1  transpilation failed (parse, codegen, or write error)\n")
+		fmt.Fprintf(os.Stderr, "  2  invalid arguments or missing flags\n")
 	}
 
+	src := flag.String("src", "", "source directory containing .html components")
+	dist := flag.String("dist", "", "destination directory for generated Go code")
+	flag.Parse()
+
 	if *src == "" || *dist == "" {
-		flag.PrintDefaults()
-		return
+		flag.Usage()
+		os.Exit(2)
 	}
 
 	if err := Run(*src, *dist); err != nil {

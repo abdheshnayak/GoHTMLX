@@ -135,6 +135,14 @@ This command will transpile HTML components from the `src` directory and generat
 - `--src`: Specifies the directory containing the source files to be transpiled.
 - `--dist`: Specifies the directory where the transpiled Go code will be generated.
 
+### Exit codes
+
+- **0** — Success. Generated code was written to `--dist`.
+- **1** — Transpilation failed (parse error, codegen error, or write error). Errors include file and line when available.
+- **2** — Invalid arguments or missing required flags (e.g. missing `--src` or `--dist`).
+
+Scripts and CI can rely on `gohtmlx --src=... --dist=... && go build ...`.
+
 ## How It Works
 
 1. **Transpilation:** gohtmlx takes HTML components defined with placeholders and transpiles them into valid Go code.

@@ -3,10 +3,14 @@ package main
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 )
+
+// Set GOHTMLX_UPDATE_GOLDEN=1 to update golden files when the transpiler output intentionally changes.
+const updateGoldenEnv = "GOHTMLX_UPDATE_GOLDEN"
 
 func TestRun_DeterministicOutput(t *testing.T) {
 	src := filepath.Join("example", "src", "comps")
@@ -78,5 +82,103 @@ func TestRun_SourceTrackingError(t *testing.T) {
 	}
 	if te.Message == "" {
 		t.Error("TranspileError should have Message set")
+	}
+}
+
+func TestRun_Golden(t *testing.T) {
+	src := filepath.Join("testdata", "golden")
+	wantPath := filepath.Join("testdata", "golden", "want", "comp_generated.go")
+	if _, err := os.Stat(src); err != nil {
+		t.Skipf("testdata/golden not found: %v", err)
+	}
+	if _, err := os.Stat(wantPath); err != nil {
+		t.Skipf("golden want file not found: %v", err)
+	}
+
+	dist := t.TempDir()
+	if err := Run(src, dist); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	gotPath := filepath.Join(dist, "gohtmlxc", "comp_generated.go")
+	got, err := os.ReadFile(gotPath)
+	if err != nil {
+		t.Fatalf("read generated: %v", err)
+	}
+	want, err := os.ReadFile(wantPath)
+	if err != nil {
+		t.Fatalf("read golden: %v", err)
+	}
+
+	if string(got) != string(want) {
+		if os.Getenv(updateGoldenEnv) == "1" {
+			if err := os.WriteFile(wantPath, got, 0644); err != nil {
+				t.Fatalf("update golden: %v", err)
+			}
+			t.Log("updated golden file")
+			return
+		}
+		t.Errorf("generated output differs from golden. Run with %s=1 to update golden.", updateGoldenEnv)
+		t.Logf("got %d bytes, want %d bytes", len(got), len(want))
+		// Show first diff
+		for i := 0; i < len(got) && i < len(want); i++ {
+			if got[i] != want[i] {
+				t.Errorf("first diff at byte %d", i)
+				start := i - 30
+				if start < 0 {
+					start = 0
+				}
+				end := i + 30
+				if end > len(got) {
+					end = len(got)
+				}
+				t.Errorf("got  ...%q...", got[start:end])
+				if end > len(want) {
+					end = len(want)
+				}
+				t.Errorf("want ...%q...", want[start:end])
+				break
+			}
+		}
+	}
+}
+
+func TestRun_IntegrationBuild(t *testing.T) {
+	src := filepath.Join("testdata", "golden")
+	if _, err := os.Stat(src); err != nil {
+		t.Skipf("testdata/golden not found: %v", err)
+	}
+	root := repoRoot()
+	if root == "" {
+		t.Skip("repo root (go.mod) not found")
+	}
+	// Transpile into a path under the repo so "go build" can resolve the module
+	dist := filepath.Join(root, "testdata", "golden", "out")
+	_ = os.RemoveAll(dist)
+	defer os.RemoveAll(dist)
+	if err := Run(src, dist); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	relPkg, _ := filepath.Rel(root, filepath.Join(dist, "gohtmlxc"))
+	pkgPath := "./" + filepath.ToSlash(relPkg)
+	cmd := exec.Command("go", "build", pkgPath)
+	cmd.Dir = root
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("go build %s: %v", pkgPath, err)
+	}
+}
+
+func repoRoot() string {
+	dir, _ := os.Getwd()
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return dir
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return ""
+		}
+		dir = parent
 	}
 }

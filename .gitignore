@@ -1,4 +1,5 @@
 example/dist
+testdata/golden/out
 bin
 node_modules
 *.fiber.gz

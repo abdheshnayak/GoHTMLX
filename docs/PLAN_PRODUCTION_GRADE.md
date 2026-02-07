@@ -37,14 +37,14 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 ---
 
-### 1.3 Exit code and CLI contract
+### 1.3 Exit code and CLI contract ✅
 
 **Problem:** Callers (scripts, CI) need a clear success/failure contract.
 
 **Deliverables:**
-- [ ] On success: exit 0.
-- [ ] On any error (flag validation, read, parse, codegen, write): exit 1 (or 2 for usage errors if you want to distinguish).
-- [ ] Document in README and `--help` (e.g. “Exits 0 on success, 1 on error”).
+- [x] On success: exit 0.
+- [x] On any error (flag validation, read, parse, codegen, write): exit 1 (or 2 for usage errors if you want to distinguish).
+- [x] Document in README and `--help` (e.g. “Exits 0 on success, 1 on error”).
 
 **Acceptance:** CI can rely on `gohtmlx ... && go build ...`.
 
@@ -210,25 +210,27 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 **Goal:** Safe refactors and regressions caught early.
 
-### 6.1 Unit tests for pipeline
+### 6.1 Unit tests for pipeline ✅
 
 **Deliverables:**
-- [ ] Tests for: section parsing (comment delimiters), props YAML parsing, HTML→Go code generation for elements (E, R, for, components), struct generation.
-- [ ] Use table-driven tests and testdata (small .html and expected .go snippets or full output).
-- [ ] Tests for error cases: malformed comments, invalid YAML, unknown component in HTML, missing required props.
+- [x] Tests for: section parsing (comment delimiters), props YAML parsing, HTML→Go code generation for elements (E, R, for, components), struct generation.
+- [x] Use table-driven tests and testdata (small .html and expected .go snippets or full output).
+- [x] Tests for error cases: malformed comments, invalid YAML, unknown component in HTML, missing required props.
 
 **Acceptance:** Key parsing and codegen paths have unit tests; running tests is part of CI.
 
 ---
 
-### 6.2 Golden / integration tests
+### 6.2 Golden / integration tests ✅
 
 **Deliverables:**
-- [ ] Golden test: run transpiler on a fixed `testdata/` tree; compare generated output to checked-in golden files (with deterministic order from Phase 1).
-- [ ] Integration test: transpile example (or a minimal variant), then `go build` the result and optionally run a single render to stdout.
-- [ ] Document how to update golden files (`-update` or env var).
+- [x] Golden test: run transpiler on a fixed `testdata/` tree; compare generated output to checked-in golden files (with deterministic order from Phase 1).
+- [x] Integration test: transpile example (or a minimal variant), then `go build` the result and optionally run a single render to stdout.
+- [x] Document how to update golden files (`-update` or env var).
 
 **Acceptance:** Changing the transpiler breaks golden or integration test when behavior changes; team updates goldens intentionally.
+
+**How to update golden:** run tests with `GOHTMLX_UPDATE_GOLDEN=1` to overwrite `testdata/golden/want/comp_generated.go` with current output.
 
 ---
 
