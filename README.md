@@ -25,9 +25,13 @@ cd example
 task dev
 ```
 
-## Goals
+## Concepts
 
-gohtmlx allows developers to write reusable HTML components, which are then transpiled into Go code. The generated Go code can be utilized to render dynamic and reusable server-side components efficiently. The focus is on providing a simple way to create server-rendered HTML with a declarative and reusable approach.
+- **Components** — Defined in `.html` with `<!-- + define "Name" -->` and optional `props` (YAML) and required `html` sections. Transpiled to Go structs and `NameComp(props, attrs, children...)` functions.
+- **Props** — Declared as `name: type` in the props block; used in HTML as `{props.Name}`. Types can be Go built-ins or custom types (with imports).
+- **Control flow** — `<for items={props.Items} as="item">...</for>` for loops; `<if condition={expr}>...</if>`, `<elseif>`, `<else>` for conditionals.
+- **Slots** — Layouts use `<slot name="header"/>`; callers pass `<Layout><slot name="header">...</slot></Layout>`.
+- **Output** — Default: one generated `.go` file per component under `--dist`; `--single-file` emits one `comp_generated.go`.
 
 ## Example Usage
 
@@ -150,14 +154,18 @@ gohtmlx --src=path/to/src --dist=path/to/dist
 
 This command will transpile HTML components from the `src` directory and generate Go code in the `dist` directory.
 
-### Options
+### CLI reference
 
-- `--src`: Directory containing the source `.html` component files.
-- `--dist`: Directory where generated Go code is written (e.g. `dist/gohtmlxc/`).
-- `--single-file`: Emit one `comp_generated.go` (legacy). Default is one file per component plus `imports.go`.
-- `--pkg`: Generated package name (default `gohtmlxc`). You can point `--dist` to a subpackage of your module (e.g. `internal/gen` or `example/dist`) so the generated package lives where you want.
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--src` | Yes | Source directory containing `.html` component files (walked recursively). |
+| `--dist` | Yes | Destination directory for generated Go code (e.g. `dist/gohtmlxc/`). |
+| `--single-file` | No | Emit one `comp_generated.go` (legacy). Default: one `.go` file per component. |
+| `--pkg` | No | Generated package name (default `gohtmlxc`). |
 
-Imports from each file are merged and deduplicated by path (same path in multiple `<!-- * define "imports" -->` blocks → single import); order is deterministic.
+Example: `gohtmlx --src=example/src --dist=example/dist --pkg=gohtmlxc`
+
+Imports from each file are merged and deduplicated by path; order is deterministic. See **[docs/TEMPLATE_REFERENCE.md](docs/TEMPLATE_REFERENCE.md)** for define, props, for, if, slots, and attrs.
 
 ### Exit codes
 
@@ -188,15 +196,16 @@ Each run is a **full transpile** (all `.html` files under `--src`). A future enh
 - **Seamless Integration:** Combines Go’s performance and HTML's clarity.
 - **Dynamic HTML:** Simplifies the creation of dynamic server-side web content.
 
-## Future Enhancements
+## Documentation
 
-- **Improved Error Handling:** Provide detailed errors during transpilation.
-- **Enhanced Debugging:** Add tools to visualize the transpilation process.
-- **Broader Compatibility:** Extend support for additional libraries and frameworks.
+- **[Template reference](docs/TEMPLATE_REFERENCE.md)** — define, props, html, for, if, slots, attrs.
+- **[Production checklist](docs/PRODUCTION_CHECKLIST.md)** — deterministic build, exit codes, one-file-per-component, CI, security.
+- **[Production-grade plan](docs/PLAN_PRODUCTION_GRADE.md)** — full roadmap (phases 1–8: determinism, errors, scaling, template language, testing, docs, CI).
+- **[Example README](example/README.md)** — showcase app (components, for, if, layout) and how to run it.
 
-## Production-grade roadmap
+**Optional:** Run `go run scripts/validate.go --src=DIR` to check .html files for unclosed or mismatched comment blocks (see template reference).
 
-A detailed plan to make GoHTMLX production-ready for large-scale apps (deterministic builds, source-aware errors, one-file-per-component, conditionals, slots, testing, docs, CI) is in **[docs/PLAN_PRODUCTION_GRADE.md](docs/PLAN_PRODUCTION_GRADE.md)**.
+**Releases:** See [CHANGELOG.md](CHANGELOG.md) for notable changes and versioning (v0.x pre-production).
 
 ---
 

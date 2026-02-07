@@ -12,11 +12,14 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
+// CompInfo describes a component known to the template: its display name and prop names (e.g. "slotheader" -> "slotHeader").
+// Used by the transpiler when generating calls to custom components.
 type CompInfo struct {
 	Name  string
 	Props map[string]string
 }
 
+// Html is a parsed HTML template that can be rendered to Go code. Created by NewHtml.
 type Html interface {
 	RenderGolangCode(comps map[string]CompInfo) (string, error)
 }
@@ -314,6 +317,8 @@ func (h htmlc) RenderGolangCode(comps map[string]CompInfo) (string, error) {
 	return buffer.String(), nil
 }
 
+// NewHtml parses htmlCode (a fragment or full document) and returns an Html that can generate Go code via RenderGolangCode.
+// Used by the transpiler for each component's "html" section.
 func NewHtml(htmlCode []byte) (Html, error) {
 	context := &html.Node{
 		Type:     html.ElementNode,
@@ -525,7 +530,7 @@ func getAttr(n *html.Node, key string) string {
 }
 
 // SlotNamesFromHTML parses htmlContent and returns unique slot names from <slot name="..."> elements.
-// Used by the transpiler to add slot fields to component structs.
+// Used by the transpiler to add slot fields (e.g. SlotHeader Element) to component structs.
 func SlotNamesFromHTML(htmlContent []byte) ([]string, error) {
 	ctx := &html.Node{Type: html.ElementNode, Data: "div", DataAtom: atom.Div}
 	nodes, err := html.ParseFragment(bytes.NewReader(bytes.TrimSpace(htmlContent)), ctx)

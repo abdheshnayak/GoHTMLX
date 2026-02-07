@@ -1,3 +1,6 @@
+// Package gocode generates Go source for GoHTMLX components: struct definitions,
+// component functions (NameComp, Get), and single- or multi-file output.
+// Used by pkg/transpiler; not typically called directly.
 package gocode
 
 import (
@@ -9,6 +12,8 @@ import (
 	"github.com/abdheshnayak/gohtmlx/pkg/utils"
 )
 
+// ConstructStruct returns the Go source for a component struct: "type Name struct { ... Attrs Attrs }".
+// props maps field names (e.g. "title") to Go types (e.g. "string"); keys are sorted for determinism.
 func ConstructStruct(props map[string]string, name string) string {
 	var buffer strings.Builder
 	buffer.WriteString("type ")
@@ -103,6 +108,7 @@ func ConstructComponentFile(pkg string, imports []string, name string, structStr
 	return string(b), nil
 }
 
+// ConstructSource generates single-file Go source with package "gohtmlxc". See ConstructSourceWithPkg for custom package name.
 func ConstructSource(codes map[string]string, structs []string, imports []string) (string, error) {
 	return ConstructSourceWithPkg(codes, structs, imports, "gohtmlxc")
 }

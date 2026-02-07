@@ -1,3 +1,7 @@
+// Package element provides the runtime types and rendering used by GoHTMLX-generated code.
+// Generated components produce Element values (via E, R, and component constructors) and
+// call Render(w) to write HTML. Use this package only from generated code or when
+// implementing custom elements; the transpiler lives in pkg/transpiler.
 package element
 
 import (
@@ -12,8 +16,11 @@ const (
 	nbspChar = " "
 )
 
+// Attrs holds attribute key-value pairs for an element (e.g. class, id).
+// Used by generated code and by E(tag, attrs, children...).
 type Attrs map[string]any
 
+// GetAttr returns a typed attribute value from attrs, or nil if missing or wrong type.
 func GetAttr[T any](attrs Attrs, key string) *T {
 	if val, ok := attrs[key]; ok {
 		resp, ok := val.(T)
@@ -28,8 +35,10 @@ func GetAttr[T any](attrs Attrs, key string) *T {
 	return nil
 }
 
+// Event is a placeholder type for future event handling.
 type Event any
 
+// Element is the interface produced by generated components. Render writes HTML to w.
 type Element interface {
 	Render(io.Writer) (int, error)
 }
@@ -94,6 +103,7 @@ func (t renderElement) Render(w io.Writer) (int, error) {
 	return w.Write([]byte(buffer.String()))
 }
 
+// R builds an Element from a mix of strings, Elements, and slices of Elements (used by generated code).
 func R(items ...interface{}) Element {
 	return renderElement{
 		items: items,
@@ -106,6 +116,7 @@ type renderComp struct {
 	childrens []Element
 }
 
+// E builds an HTML element with the given tag, attrs, and children (used by generated code).
 func E(tag string, attrs Attrs, childrens ...Element) Element {
 	return element{
 		tag:       tag,

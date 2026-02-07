@@ -248,33 +248,33 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 **Goal:** Onboarding and daily use are straightforward.
 
-### 7.1 User-facing docs
+### 7.1 User-facing docs ✅
 
 **Deliverables:**
-- [ ] README: quick start, CLI reference (flags, exit codes), conceptual overview (components, props, for, attrs).
-- [ ] Separate doc: “Template reference” (define, props, html, for, if, slots when added).
-- [ ] “Production checklist”: deterministic build, validate-types in CI, one-file-per-component, error handling, logging.
+- [x] README: quick start, CLI reference (flags, exit codes), conceptual overview (components, props, for, if, slots).
+- [x] Separate doc: “Template reference” ([docs/TEMPLATE_REFERENCE.md](TEMPLATE_REFERENCE.md)) — define, props, html, for, if, slots, attrs.
+- [x] “Production checklist” ([docs/PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)): deterministic build, exit codes, one-file-per-component, error handling, CI, security.
 - [ ] “Migration” or “Upgrading” when you introduce breaking changes (e.g. new CLI flags, new syntax).
 
 **Acceptance:** A new developer can run, change a component, and understand errors and flags from docs.
 
 ---
 
-### 7.2 Inline and API docs
+### 7.2 Inline and API docs ✅
 
 **Deliverables:**
-- [ ] Package comments for `pkg/element`, `pkg/gocode`, and the new transpiler package.
-- [ ] Exported functions and types documented (godoc); no need to document every internal helper.
+- [x] Package comments for `pkg/element`, `pkg/gocode`, and the transpiler package.
+- [x] Exported functions and types documented (godoc): CompInfo, Html, NewHtml, SlotNamesFromHTML, Attrs, Element, R, E, ConstructStruct, ConstructSource, Run, RunOptions, TranspileError.
 
 **Acceptance:** `go doc` and IDE hover show clear descriptions for public API.
 
 ---
 
-### 7.3 Example and optional tooling
+### 7.3 Example and optional tooling ✅
 
 **Deliverables:**
-- [ ] Keep example app working after each phase; add a “complex” example if useful (e.g. layout + slots, conditional, many components).
-- [ ] Optional: VS Code (or Cursor) snippet or a tiny “validator” script that checks comment structure and reports file:line.
+- [x] Keep example app working after each phase; add a “complex” example (showcase: layout, conditionals, for, many components) — see [example/README.md](example/README.md).
+- [x] Optional validator script: `scripts/validate.go` checks comment structure (<!-- + define --> / <!-- + end -->, etc.) and reports file:line; documented in [TEMPLATE_REFERENCE.md](TEMPLATE_REFERENCE.md) and README.
 
 **Acceptance:** Example runs; optional tooling documented.
 
@@ -284,34 +284,34 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 **Goal:** Reliable releases and safe dependencies.
 
-### 8.1 CI pipeline
+### 8.1 CI pipeline ✅
 
 **Deliverables:**
-- [ ] CI (e.g. GitHub Actions): on push/PR run: `go build ./...`, `go test ./...`, golden test, integration build, and (if added) fuzz with short run.
-- [ ] Linting: `golangci-lint` or equivalent (format, vet, staticcheck).
-- [ ] Optional: build and run example in CI.
+- [x] CI (GitHub Actions): on push/PR run `go build ./...`, `go test ./...`, HTML validator (scripts/validate.go), golangci-lint, example transpile+build, govulncheck.
+- [x] Linting: golangci-lint (via golangci-lint-action).
+- [x] Example build in CI (transpile then `go build` in example/).
 
 **Acceptance:** PRs that break build or tests are rejected; main stays green.
 
 ---
 
-### 8.2 Versioning and releases
+### 8.2 Versioning and releases ✅
 
 **Deliverables:**
-- [ ] Semantic versioning: v0.x for pre-production; v1.0 when “production-grade” criteria are met.
-- [ ] Changelog (CHANGELOG.md or GitHub Releases) for each release; document breaking changes.
+- [x] Semantic versioning: v0.x for pre-production; v1.0 when “production-grade” criteria are met.
+- [x] Changelog (CHANGELOG.md) for notable changes; document breaking changes when releasing.
 - [ ] Optional: tag releases and publish binaries (e.g. GitHub Releases) for `go install github.com/...@latest`.
 
 **Acceptance:** Users can depend on a specific version and read what changed.
 
 ---
 
-### 8.3 Dependencies and security
+### 8.3 Dependencies and security ✅
 
 **Deliverables:**
-- [ ] Keep `go.mod` minimal; prefer standard library and well-maintained deps (`golang.org/x/net`, `sigs.k8s.io/yaml`).
-- [ ] Run `go mod tidy` and `govulncheck` (or Dependabot) in CI; fix high/critical issues.
-- [ ] No secrets or credentials in repo; document that generated code may import user packages.
+- [x] Keep `go.mod` minimal; prefer standard library and well-maintained deps (`golang.org/x/net`, `sigs.k8s.io/yaml`). Core has no Fiber/fwatcher.
+- [x] Run govulncheck in CI (vulncheck job); fix high/critical issues. Use `go mod tidy` before commits.
+- [x] No secrets or credentials in repo; document that generated code may import user packages (see PRODUCTION_CHECKLIST and TEMPLATE_REFERENCE).
 
 **Acceptance:** No known high/critical vulnerabilities in direct deps; CI enforces checks.
 

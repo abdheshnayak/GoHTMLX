@@ -1,3 +1,7 @@
+// Package transpiler implements the GoHTMLX pipeline: read .html component files,
+// parse sections (define, props, html), discover slots and props, generate Go code
+// via pkg/element and pkg/gocode, and write to --dist. It does not depend on
+// Fiber or file watchers; the CLI (main) calls Run and handles exit codes.
 package transpiler
 
 import (
@@ -123,8 +127,11 @@ func componentFileName(name string) string {
 }
 
 // Run transpiles HTML components from src to Go code in dist.
-// It uses utils.Log for progress when set (default is no-op).
-// If opts is nil, one file per component is emitted with package "gohtmlxc".
+// It walks src for .html files, parses component sections, merges imports, discovers
+// slots from HTML, generates structs and component code, and writes to dist/<pkg>/*.go
+// (or a single comp_generated.go when opts.SingleFile is true). Uses utils.Log for
+// progress when set. If opts is nil, one file per component is emitted with package "gohtmlxc".
+// Returns a *TranspileError (or wrapped error) on failure with file/line when available.
 func Run(src, dist string, opts *RunOptions) error {
 	opt := defaultOptions(opts)
 	if utils.Log != nil {
