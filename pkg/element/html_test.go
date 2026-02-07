@@ -68,6 +68,39 @@ func TestNewHtml_ForElement(t *testing.T) {
 	}
 }
 
+func TestNewHtml_IfElement(t *testing.T) {
+	h, err := NewHtml([]byte(`<if condition={props.Show}><span>yes</span></if>`))
+	if err != nil {
+		t.Fatalf("NewHtml: %v", err)
+	}
+	comps := map[string]CompInfo{}
+	out, err := h.RenderGolangCode(comps)
+	if err != nil {
+		t.Fatalf("RenderGolangCode: %v", err)
+	}
+	if !strings.Contains(out, "if ") || !strings.Contains(out, "return []Element{") {
+		t.Errorf("expected if and return []Element in output, got: %s", out)
+	}
+	if !strings.Contains(out, "Show") {
+		t.Errorf("expected condition (Show) in output, got: %s", out)
+	}
+}
+
+func TestNewHtml_IfElseElement(t *testing.T) {
+	h, err := NewHtml([]byte(`<if condition={props.A}><span>a</span></if><else><span>no</span></else>`))
+	if err != nil {
+		t.Fatalf("NewHtml: %v", err)
+	}
+	comps := map[string]CompInfo{}
+	out, err := h.RenderGolangCode(comps)
+	if err != nil {
+		t.Fatalf("RenderGolangCode: %v", err)
+	}
+	if !strings.Contains(out, "if ") || !strings.Contains(out, "return []Element{") {
+		t.Errorf("expected if and return in output, got: %s", out)
+	}
+}
+
 func TestNewHtml_InvalidHTML(t *testing.T) {
 	// html.ParseFragment can be lenient; test that we don't panic and get some output or error
 	h, err := NewHtml([]byte("<div>ok</div>"))

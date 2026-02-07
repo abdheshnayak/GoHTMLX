@@ -86,15 +86,15 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 **Goal:** Richer templates and fewer footguns so developers can stay in HTML-like layer.
 
-### 3.1 Conditional rendering
+### 3.1 Conditional rendering ✅
 
 **Problem:** No first-class `if` in templates; everything is pushed to Go.
 
 **Deliverables:**
-- [ ] Add `<if condition={expr}>...</if>` (and optional `<else>`, `<else if condition={expr}>`).
-- [ ] `condition` must be a boolean expression (e.g. `props.ShowFooter`, `len(props.Items) > 0`).
-- [ ] Transpile to Go `if ... { ... }` in the generated code.
-- [ ] Document with examples; add tests (including with `for` and nesting).
+- [x] Add `<if condition={expr}>...</if>` (and optional `<else>`, `<elseif condition={expr}>`).
+- [x] `condition` must be a boolean expression (e.g. `props.ShowFooter`, `len(props.Items) > 0`).
+- [x] Transpile to Go `if ... { ... }` in the generated code.
+- [x] Document with examples; add tests (including with `for` and nesting).
 
 **Acceptance:** Layouts can show/hide sections and list empty states without extra Go glue.
 

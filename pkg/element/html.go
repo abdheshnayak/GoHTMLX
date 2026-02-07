@@ -84,6 +84,78 @@ func processFor(n *html.Node, comps map[string]CompInfo) (string, error) {
 	return buffer.String(), nil
 }
 
+// processIfChain handles <if condition={expr}>...</if> and optional <elseif condition={}>...</elseif>, <else>...</else>.
+// Returns generated code and the last node consumed (so caller can skip to last.NextSibling).
+func processIfChain(ifNode *html.Node, comps map[string]CompInfo) (string, *html.Node, error) {
+	cond, err := getConditionAttr(ifNode)
+	if err != nil {
+		return "", nil, err
+	}
+	condGo := processRaws(cond)
+
+	var parts []string // "if cond { return []Element{...} }" etc.
+	thenCode, err := renderChildren(ifNode, comps)
+	if err != nil {
+		return "", nil, err
+	}
+	parts = append(parts, fmt.Sprintf("if %s {\nreturn []Element{%s}\n}", condGo, thenCode))
+
+	last := ifNode
+	for sib := ifNode.NextSibling; sib != nil; sib = sib.NextSibling {
+		switch sib.Data {
+		case "elseif":
+			c, err := getConditionAttr(sib)
+			if err != nil {
+				return "", nil, err
+			}
+			cGo := processRaws(c)
+			body, err := renderChildren(sib, comps)
+			if err != nil {
+				return "", nil, err
+			}
+			parts = append(parts, fmt.Sprintf("if %s {\nreturn []Element{%s}\n}", cGo, body))
+			last = sib
+		case "else":
+			body, err := renderChildren(sib, comps)
+			if err != nil {
+				return "", nil, err
+			}
+			parts = append(parts, fmt.Sprintf("return []Element{%s}", body))
+			last = sib
+			goto done
+		default:
+			goto done
+		}
+	}
+done:
+	inner := strings.Join(parts, "\n")
+	return fmt.Sprintf("R(func() []Element {\n%s\n}(),)", inner), last, nil
+}
+
+func getConditionAttr(n *html.Node) (string, error) {
+	for _, a := range n.Attr {
+		if a.Key == "condition" {
+			return a.Val, nil
+		}
+	}
+	return "", fmt.Errorf("'if' or 'elseif' element requires condition attribute")
+}
+
+func renderChildren(n *html.Node, comps map[string]CompInfo) (string, error) {
+	var parts []string
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		b, err := render(c, comps)
+		if err != nil {
+			return "", err
+		}
+		if len(b) == 0 {
+			continue
+		}
+		parts = append(parts, b)
+	}
+	return strings.Join(parts, ","), nil
+}
+
 func generateProps(n *html.Node, comps map[string]CompInfo) (string, error) {
 	isStd := isStandard(n.Data)
 
@@ -283,6 +355,15 @@ func render(n *html.Node, comps map[string]CompInfo) (string, error) {
 				return "", err
 			}
 			buffer.WriteString(s)
+		} else if n.Data == "if" {
+			s, _, err := processIfChain(n, comps)
+			if err != nil {
+				return "", err
+			}
+			buffer.WriteString(s)
+		} else if n.Data == "elseif" || n.Data == "else" {
+			// Consumed by a preceding <if>; skip (processIfChain already emitted code)
+			return "", nil
 		} else {
 
 			s, err := generateProps(n, comps)
@@ -303,6 +384,9 @@ func render(n *html.Node, comps map[string]CompInfo) (string, error) {
 			} else {
 
 				for c := n.FirstChild; c != nil; c = c.NextSibling {
+					if c.Type == html.ElementNode && (c.Data == "elseif" || c.Data == "else") {
+						continue
+					}
 					b, err := render(c, comps)
 					if err != nil {
 						return "", err

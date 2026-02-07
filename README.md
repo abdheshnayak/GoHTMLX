@@ -78,6 +78,24 @@ projectName: string
 <!-- + end -->
 ```
 
+### Conditional rendering
+
+Use `<if>`, `<elseif>`, and `<else>` to show or hide blocks based on props:
+
+```html
+<if condition={props.ShowFooter}>
+  <footer>...</footer>
+</if>
+<elseif condition={props.ShowAlt}>
+  <div>Alternative</div>
+</elseif>
+<else>
+  <div>Default</div>
+</else>
+```
+
+`condition` is a boolean expression (e.g. `props.ShowFooter`, `len(props.Items) > 0`). It is transpiled to Go `if`/`else` in the generated code.
+
 ### Using Components in Go
 
 ```go
