@@ -388,7 +388,11 @@ func processRaws(input string) string {
 		if val != "" {
 			if strings.HasPrefix(val, "$") {
 				f := strings.Split(val, ".")
-				tokens = append(tokens, fmt.Sprintf("%s[\"%s\"]", strings.Replace(f[0], "$", "", 1), f[1]))
+				if len(f) >= 2 {
+					tokens = append(tokens, fmt.Sprintf("%s[\"%s\"]", strings.Replace(f[0], "$", "", 1), f[1]))
+				} else {
+					tokens = append(tokens, fmt.Sprintf("`%s`", val))
+				}
 			} else {
 				if strings.HasPrefix(val, "props.") && len(val) > 6 {
 					val = val[:6] + strings.ToUpper(val[6:7]) + val[7:]

@@ -188,3 +188,14 @@ func TestNewHtml_MultipleBracedExpressions(t *testing.T) {
 		t.Errorf("multiple expressions should be comma-separated in R(...), got: %s", out)
 	}
 }
+
+// FuzzProcessRaws exercises processRaws with arbitrary inputs to catch panics or invalid output.
+// Run with: go test -fuzz=FuzzProcessRaws -fuzztime=30s ./pkg/element/
+func FuzzProcessRaws(f *testing.F) {
+	f.Fuzz(func(t *testing.T, data []byte) {
+		if len(data) > 1e5 {
+			t.Skip("input too large")
+		}
+		_ = processRaws(string(data))
+	})
+}

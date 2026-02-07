@@ -34,6 +34,9 @@ jobs:
       - name: Validate HTML comments
         run: go run scripts/validate.go --src=example/src/comps
 
+      - name: Fuzz (short run)
+        run: go test -fuzz=FuzzProcessRaws -fuzztime=30s ./pkg/element/
+
   lint:
     runs-on: ubuntu-latest
     steps:

@@ -165,6 +165,14 @@ This command will transpile HTML components from the `src` directory and generat
 
 Example: `gohtmlx --src=example/src --dist=example/dist --pkg=gohtmlxc`
 
+**Validate (optional):** Check comment structure (unclosed `define`/`end`, mismatched delimiters) without transpiling:
+
+```bash
+gohtmlx validate --src=path/to/html/dir
+```
+
+Exit 0 if all `.html` files pass; 1 if any error (messages include file:line). Useful in CI or before committing.
+
 Imports from each file are merged and deduplicated by path; order is deterministic. See **[docs/TEMPLATE_REFERENCE.md](docs/TEMPLATE_REFERENCE.md)** for define, props, for, if, slots, and attrs.
 
 ### Exit codes
@@ -182,7 +190,7 @@ For fast re-transpile during development, use the **Taskfile-based watch** (no e
 - **From repo root:** `task dev` — watches `go` and `html` under the repo, re-runs full transpile then exits (restart to run again), or use `nodemon -e go,html -i example/dist --exec "go run . --src=example/src --dist=example/dist"` to loop.
 - **From example:** `task dev` — runs transpile watch (root), app watch, and CSS watch in parallel so that changing `.html` triggers a re-transpile and app restart.
 
-Each run is a **full transpile** (all `.html` files under `--src`). A future enhancement could support incremental mode (only re-parse changed files and regenerate affected components).
+Each run is a **full transpile** (all `.html` files under `--src`). *Incremental* mode (only re-parse changed `.html` files and regenerate affected components) is an optional future enhancement (Phase 2.2b); the CLI does not implement it today.
 
 ## How It Works
 
@@ -200,6 +208,7 @@ Each run is a **full transpile** (all `.html` files under `--src`). A future enh
 
 - **[Template reference](docs/TEMPLATE_REFERENCE.md)** — define, props, html, for, if, slots, attrs.
 - **[Production checklist](docs/PRODUCTION_CHECKLIST.md)** — deterministic build, exit codes, one-file-per-component, CI, security.
+- **[Migration / upgrading](docs/MIGRATION.md)** — how to upgrade when we introduce breaking changes.
 - **[Production-grade plan](docs/PLAN_PRODUCTION_GRADE.md)** — full roadmap (phases 1–8: determinism, errors, scaling, template language, testing, docs, CI).
 - **[Example README](example/README.md)** — showcase app (components, for, if, layout) and how to run it.
 

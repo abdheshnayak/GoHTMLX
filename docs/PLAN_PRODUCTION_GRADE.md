@@ -74,7 +74,7 @@ This document outlines the work required to make GoHTMLX production-grade for la
 **Problem:** Developers want fast feedback without re-transpiling everything.
 
 **Deliverables:**
-- [ ] Document that “incremental” can mean: only re-parse changed `.html` files and only regenerate affected components (optional Phase 2.2b).
+- [x] Document that “incremental” can mean: only re-parse changed `.html` files and only regenerate affected components (optional Phase 2.2b); see README “Development and watch”.
 - [x] Or: provide a simple `--watch` that re-runs full transpile on file change (no new deps in core; can be a separate cmd or example using fsnotify).
 - [x] Keep current Taskfile-based watch as the reference; don’t couple core to fwatcher.
 
@@ -118,10 +118,10 @@ This document outlines the work required to make GoHTMLX production-grade for la
 **Problem:** Comment-based `<!-- + define "Name" -->` is brittle and not IDE-friendly.
 
 **Deliverables:**
-- [ ] Keep current syntax supported (backward compatible).
-- [ ] Option A: Add a strict mode that requires well-formed comments and reports file:line on malformed blocks.
+- [x] Keep current syntax supported (backward compatible).
+- [x] Option A: Add a strict mode that requires well-formed comments and reports file:line on malformed blocks (validator reports file:line).
 - [ ] Option B: Introduce an alternative format (e.g. one component per file with a simple frontmatter or delimiter) and document migration.
-- [ ] Document “recommended” style and add a lint/validate subcommand that checks for common mistakes (e.g. unclosed define, wrong delimiter).
+- [x] Document “recommended” style and add a lint/validate subcommand that checks for common mistakes (e.g. unclosed define, wrong delimiter).
 
 **Acceptance:** Fewer silent failures; optional validator; path to better tooling (syntax highlighting, etc.).
 
@@ -234,11 +234,11 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 ---
 
-### 6.3 Fuzz or property tests (optional)
+### 6.3 Fuzz or property tests (optional) ✅
 
 **Deliverables:**
-- [ ] At least one fuzz target for a critical path (e.g. processRaws, or HTML fragment parsing) to catch panics and invalid output.
-- [ ] Run in CI with a small iteration count.
+- [x] At least one fuzz target for a critical path: FuzzProcessRaws in pkg/element (processRaws) to catch panics.
+- [x] Run in CI with a short run (e.g. -fuzztime=30s) in the build-and-test job.
 
 **Acceptance:** No panics on arbitrary input within a reasonable scope.
 
@@ -254,7 +254,7 @@ This document outlines the work required to make GoHTMLX production-grade for la
 - [x] README: quick start, CLI reference (flags, exit codes), conceptual overview (components, props, for, if, slots).
 - [x] Separate doc: “Template reference” ([docs/TEMPLATE_REFERENCE.md](TEMPLATE_REFERENCE.md)) — define, props, html, for, if, slots, attrs.
 - [x] “Production checklist” ([docs/PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)): deterministic build, exit codes, one-file-per-component, error handling, CI, security.
-- [ ] “Migration” or “Upgrading” when you introduce breaking changes (e.g. new CLI flags, new syntax).
+- [x] “Migration” or “Upgrading” when you introduce breaking changes (e.g. new CLI flags, new syntax); see [docs/MIGRATION.md](MIGRATION.md).
 
 **Acceptance:** A new developer can run, change a component, and understand errors and flags from docs.
 
@@ -351,13 +351,13 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 ## Summary checklist (high level)
 
-- [ ] Phase 1: Determinism, source-aware errors, exit codes
-- [ ] Phase 2: One file per component, optional watch/incremental
-- [ ] Phase 3: Conditionals, slots, more robust syntax/validator
-- [ ] Phase 4: Per-file imports, configurable pkg/out, optional type validation
-- [ ] Phase 5: Core decoupled; optional Fiber/fwatcher; logging interface
-- [ ] Phase 6: Unit + golden + integration tests; optional fuzz
-- [ ] Phase 7: User docs, API docs, example, optional IDE/tooling
-- [ ] Phase 8: CI, versioning, changelog, dependency/security checks
+- [x] Phase 1: Determinism, source-aware errors, exit codes
+- [x] Phase 2: One file per component, optional watch/incremental
+- [x] Phase 3: Conditionals, slots, more robust syntax/validator
+- [x] Phase 4: Per-file imports, configurable pkg/out, optional type validation
+- [x] Phase 5: Core decoupled; optional Fiber/fwatcher; logging interface
+- [x] Phase 6: Unit + golden + integration tests; optional fuzz
+- [x] Phase 7: User docs, API docs, example, optional IDE/tooling
+- [x] Phase 8: CI, versioning, changelog, dependency/security checks
 
 This plan, executed in the suggested order, should make GoHTMLX production-grade and suitable for large-scale applications while reducing developer complexity.
