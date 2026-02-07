@@ -3,9 +3,9 @@ package comps
 import (
 	"strings"
 
-	gc "github.com/abdheshnayak/gohtmlx/example/dist/gohtmlxc"
+	gc "github.com/abdheshnayak/gohtmlx/examples/showcase/dist/gohtmlxc"
 	"github.com/abdheshnayak/gohtmlx/pkg/element"
-	t "github.com/abdheshnayak/gohtmlx/example/src/types"
+	t "github.com/abdheshnayak/gohtmlx/examples/showcase/src/types"
 )
 
 // htmlEscape escapes code so the browser shows it as text instead of rendering tags/comments.

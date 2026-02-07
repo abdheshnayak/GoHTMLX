@@ -41,16 +41,16 @@ Then commit the updated golden files (`testdata/golden/want/` for single-file mo
 
 - **HTML comment validator** (checks `<!-- + define -->` / `<!-- + end -->` and section structure):
   ```bash
-  go run scripts/validate.go --src=example/src/comps
+  go run scripts/validate.go --src=examples/showcase/src
   ```
-  Or with the built CLI: `go build -o gohtmlx . && ./gohtmlx validate --src=example/src/comps`
+  Or with the built CLI: `go build -o gohtmlx . && ./gohtmlx validate --src=examples/showcase/src`
 
 ## Example build
 
 Ensure the example app still transpiles and builds:
 
 ```bash
-go run . --src=example/src/comps --dist=example/dist
+go run . --src=examples/showcase/src --dist=examples/showcase/dist
 cd example && go build -o /dev/null .
 ```
 

@@ -9,7 +9,7 @@ Use this checklist when deploying GoHTMLX in production or in CI.
 - [ ] **Deterministic builds:** Run `gohtmlx --src=... --dist=...` twice and confirm generated files are identical (no map-iteration noise in diffs). The CLI sorts component names, struct fields, and imports.
 - [ ] **Exit codes:** Scripts/CI should use `gohtmlx ... && go build ...`. Exit `0` = success; `1` = transpilation failed; `2` = invalid or missing flags.
 - [ ] **One file per component (default):** Prefer the default mode (no `--single-file`) so each component lives in its own `.go` file. This reduces merge conflicts and keeps builds scalable.
-- [ ] **Output location:** Use `--dist` to write into a subpackage of your module (e.g. `internal/gen` or `example/dist`) and `--pkg` if you need a specific package name (default `gohtmlxc`).
+- [ ] **Output location:** Use `--dist` to write into a subpackage of your module (e.g. `internal/gen` or `examples/showcase/dist`) and `--pkg` if you need a specific package name (default `gohtmlxc`).
 
 ---
 

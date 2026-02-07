@@ -3,8 +3,8 @@ version: '3'
 silent: true
 
 vars:
-  src: example/src
-  dist: example/dist
+  src: examples/showcase/src
+  dist: examples/showcase/dist
 
 tasks:
   build:
@@ -18,13 +18,13 @@ tasks:
       - task build && ./bin/gohtmlx --src={{.src}} --dist={{.dist}}
   dev:
     cmds:
-      - nodemon -e "go,html" -i "example/dist" -q --signal SIGTERM --exec "task run"
+      - nodemon -e "go,html" -i "examples/showcase/dist" -q --signal SIGTERM --exec "task run"
 
   docker:push:
     desc: Build and push example app image to ghcr.io/abdheshnayak/htmlx:example (override with env).
     env:
       DOCKER_REGISTRY: ghcr.io
-      DOCKER_IMAGE: abdheshnayak/htmlx
+      DOCKER_IMAGE: abdheshnayak/gohtmlx
       DOCKER_TAG: example
     cmds:
       - docker buildx build --push --tag ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} --file ./Dockerfile .

@@ -8,8 +8,8 @@ Write server-side components in HTML, transpile to Go. Modern, type-safe, and fr
 git clone https://github.com/abdheshnayak/gohtmlx.git
 cd gohtmlx
 go mod tidy
-go run . --src=example/src --dist=example/dist
-cd example
+go run . --src=examples/showcase/src --dist=examples/showcase/dist
+cd examples/showcase
 go run .
 ```
 
@@ -19,7 +19,7 @@ go run .
 git clone https://github.com/abdheshnayak/gohtmlx.git
 cd gohtmlx
 go mod tidy
-cd example
+cd examples/showcase
 task dev
 ```
 
@@ -136,7 +136,7 @@ This command will transpile HTML components from the `src` directory and generat
 | `--incremental` | No | Skip transpilation if no `.html` under `--src` is newer than generated `.go` files; useful in watch scripts. |
 | `--version` | No | Print version and exit (set at build time via ldflags in releases). |
 
-Example: `gohtmlx --src=example/src --dist=example/dist --pkg=gohtmlxc`. Use `--validate-types` in CI to catch invalid prop types before commit.
+Example: `gohtmlx --src=examples/showcase/src --dist=examples/showcase/dist --pkg=gohtmlxc`. Use `--validate-types` in CI to catch invalid prop types before commit.
 
 **Validate (optional):** Check comment structure (unclosed `define`/`end`, mismatched delimiters) without transpiling:
 
@@ -160,8 +160,8 @@ Scripts and CI can rely on `gohtmlx --src=... --dist=... && go build ...`.
 
 For fast re-transpile during development, use the **Taskfile-based watch** (no extra dependencies in the core CLI):
 
-- **From repo root:** `task dev` — watches `go` and `html` under the repo, re-runs full transpile then exits (restart to run again), or use `nodemon -e go,html -i example/dist --exec "go run . --src=example/src --dist=example/dist"` to loop.
-- **From example:** `task dev` — runs transpile watch (root), app watch, and CSS watch in parallel so that changing `.html` triggers a re-transpile and app restart.
+- **From repo root:** `task dev` — watches `go` and `html` under the repo, re-runs full transpile then exits (restart to run again), or use `nodemon -e go,html -i examples/showcase/dist --exec "go run . --src=examples/showcase/src --dist=examples/showcase/dist"` to loop.
+- **From examples/showcase:** `task dev` — runs transpile watch (root), app watch, and CSS watch in parallel so that changing `.html` triggers a re-transpile and app restart.
 
 Use **`--incremental`** in watch scripts: the CLI skips work when no `.html` file is newer than the generated `.go` files. Each run without `--incremental` is a full transpile.
 
@@ -171,8 +171,8 @@ For many components: use the default **one file per component**, point `--dist` 
 
 ## How It Works
 
-1. **Transpilation:** gohtmlx takes HTML components defined with placeholders and transpiles them into valid Go code.
-3. **Dynamic Rendering:** The resulting Go code produces dynamic HTML structures, leveraging Go's capabilities for server-side rendering and component-based architecture.
+1. **Transpilation:** GoHTMLX takes HTML components (with comment-based define/props/html) and transpiles them into Go code.
+2. **Rendering:** The generated code implements `element.Element` and renders dynamic HTML; use it with any HTTP framework (net/http, Fiber, Echo, etc.).
 
 ## Benefits
 
@@ -206,11 +206,11 @@ Use **GoHTMLX** when you want to author components in **HTML**, keep the **serve
 - **[Production-grade plan](docs/PLAN_PRODUCTION_GRADE.md)** — full roadmap (phases 1–8: determinism, errors, scaling, template language, testing, docs, CI).
 - **[Roadmap & v1.0](docs/ROADMAP.md)** — v1.0 criteria, what’s done, and what’s left before production release.
 - **[Stability & community readiness](docs/STABILITY_AND_COMMUNITY_READINESS.md)** — steps for large-scale apps and wide community adoption.
-- **[Example README](example/README.md)** — showcase app (components, for, if, layout) and how to run it.
+- **[Example README](examples/showcase/README.md)** — showcase app (components, HTMX, features) and how to run it.
 - **[examples/minimal](examples/minimal/README.md)** — one component, no framework; renders HTML to stdout.
 - **[examples/nethttp](examples/nethttp/README.md)** — same component with `net/http`; framework-agnostic server.
 
-**Optional:** Run `go run scripts/validate.go --src=DIR` to check .html files for unclosed or mismatched comment blocks (see template reference).
+**Optional:** Run `gohtmlx validate --src=DIR` (or `go run scripts/validate.go --src=DIR`) to check `.html` files for unclosed or mismatched comment blocks (see [template reference](docs/TEMPLATE_REFERENCE.md)).
 
 **Releases:** See [CHANGELOG.md](CHANGELOG.md) for notable changes and versioning (v0.x pre-production).
 

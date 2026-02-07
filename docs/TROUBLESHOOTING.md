@@ -21,7 +21,7 @@ Transpilation errors often report the **line where the component starts** (the `
 Generated components implement `element.Element` and have a `Render(io.Writer) (int, error)` method. Any HTTP stack that can write to an `io.Writer` works.
 
 - **net/http:** Pass `http.ResponseWriter` (it implements `io.Writer`). See [examples/nethttp](../examples/nethttp/README.md).
-- **Fiber:** Pass the Fiber context (it implements `io.Writer`). See [example](../example/README.md) (showcase app).
+- **Fiber:** Pass the Fiber context (it implements `io.Writer`). See [examples/showcase](../examples/showcase/README.md) (showcase app).
 - **Echo, Chi, etc.:** Get the response writer from the request context and call `el.Render(w)`.
 
 No framework-specific code is required in the generated package; it only depends on `pkg/element`.

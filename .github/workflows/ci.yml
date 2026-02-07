@@ -32,7 +32,7 @@ jobs:
         run: go test -v -count=1 ./...
 
       - name: Validate HTML comments
-        run: go run scripts/validate.go --src=example/src/comps
+        run: go run scripts/validate.go --src=examples/showcase/src
 
       - name: Fuzz (short run)
         run: go test -fuzz=FuzzProcessRaws -fuzztime=30s ./pkg/element/
@@ -64,10 +64,10 @@ jobs:
           go-version: "1.23"
 
       - name: Transpile example
-        run: go run . --src=example/src/comps --dist=example/dist
+        run: go run . --src=examples/showcase/src --dist=examples/showcase/dist
 
       - name: Build example
-        run: cd example && go build -o /dev/null .
+        run: cd examples/showcase && go build -o /dev/null .
 
   vulncheck:
     runs-on: ubuntu-latest

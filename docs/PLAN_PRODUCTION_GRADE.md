@@ -273,7 +273,7 @@ This document outlines the work required to make GoHTMLX production-grade for la
 ### 7.3 Example and optional tooling ✅
 
 **Deliverables:**
-- [x] Keep example app working after each phase; add a “complex” example (showcase: layout, conditionals, for, many components) — see [example/README.md](example/README.md).
+- [x] Keep example app working after each phase; add a “complex” example (showcase: layout, conditionals, for, many components) — see [examples/showcase/README.md](../examples/showcase/README.md).
 - [x] Optional validator script: `scripts/validate.go` checks comment structure (<!-- + define --> / <!-- + end -->, etc.) and reports file:line; documented in [TEMPLATE_REFERENCE.md](TEMPLATE_REFERENCE.md) and README.
 
 **Acceptance:** Example runs; optional tooling documented.
@@ -289,7 +289,7 @@ This document outlines the work required to make GoHTMLX production-grade for la
 **Deliverables:**
 - [x] CI (GitHub Actions): on push/PR run `go build ./...`, `go test ./...`, HTML validator (scripts/validate.go), golangci-lint, example transpile+build, govulncheck.
 - [x] Linting: golangci-lint (via golangci-lint-action).
-- [x] Example build in CI (transpile then `go build` in example/).
+- [x] Example build in CI (transpile then `go build` in examples/showcase/).
 
 **Acceptance:** PRs that break build or tests are rejected; main stays green.
 

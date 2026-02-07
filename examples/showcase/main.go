@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/abdheshnayak/gohtmlx/example/src/comps"
+	"github.com/abdheshnayak/gohtmlx/examples/showcase/src/comps"
 	"github.com/abdheshnayak/gohtmlx/pkg/element"
 	gohtmlxfiber "github.com/abdheshnayak/gohtmlx/pkg/integration/fiber"
 	"github.com/abdheshnayak/gohtmlx/pkg/utils"

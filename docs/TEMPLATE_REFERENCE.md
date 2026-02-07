@@ -134,7 +134,7 @@ Each slot’s content is rendered and passed as the corresponding slot prop; any
 - Put global imports in one place per file; use the same import path only once (merged at generation time).
 - For complex layouts, use slots so callers can inject header/main/footer without prop drilling.
 
-For a full example, see the **example** app in the repository (`example/src/comps/main.html` and [example/README.md](../example/README.md)).
+For a full example, see the **showcase** app in the repository ([examples/showcase/README.md](../examples/showcase/README.md)).
 
 ---
 
@@ -143,7 +143,8 @@ For a full example, see the **example** app in the repository (`example/src/comp
 A small checker for comment structure is provided so you can catch unclosed blocks before running the transpiler:
 
 ```bash
-go run scripts/validate.go --src=path/to/your/html/dir
+gohtmlx validate --src=path/to/your/html/dir
+# or: go run scripts/validate.go --src=path/to/your/html/dir
 ```
 
 It reports file:line for:

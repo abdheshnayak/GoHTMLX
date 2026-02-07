@@ -1,0 +1,16 @@
+# Build outputs and local artifacts (Docker builds from source)
+examples/showcase/dist
+examples/showcase/node_modules
+bin
+*.fiber.gz
+validate
+
+# Test and golden outputs (not needed for image build)
+testdata/golden/out
+testdata/golden/out_multi
+
+# Git and IDE (not needed for image build)
+.git
+.github
+.cursor
+*.md
