@@ -111,3 +111,80 @@ func TestNewHtml_InvalidHTML(t *testing.T) {
 	// Severely broken HTML may or may not error depending on parser
 	_, _ = NewHtml([]byte("<<<"))
 }
+
+func TestSlotNamesFromHTML(t *testing.T) {
+	names, err := SlotNamesFromHTML([]byte(`<div><slot name="header"></slot><slot name="footer"/></div>`))
+	if err != nil {
+		t.Fatalf("SlotNamesFromHTML: %v", err)
+	}
+	if len(names) != 2 {
+		t.Errorf("expected 2 slot names, got %d: %v", len(names), names)
+	}
+	// Order may vary; check both are present
+	seen := make(map[string]bool)
+	for _, n := range names {
+		seen[n] = true
+	}
+	if !seen["header"] || !seen["footer"] {
+		t.Errorf("expected header and footer, got %v", names)
+	}
+}
+
+func TestNewHtml_SlotPlaceholder(t *testing.T) {
+	// Layout template: uses <slot name="header"/> placeholder
+	comps := map[string]CompInfo{
+		"layout": {Name: "Layout", Props: map[string]string{"slotheader": "slotHeader"}},
+	}
+	h, err := NewHtml([]byte(`<div><slot name="header"/></div>`))
+	if err != nil {
+		t.Fatalf("NewHtml: %v", err)
+	}
+	out, err := h.RenderGolangCode(comps)
+	if err != nil {
+		t.Fatalf("RenderGolangCode: %v", err)
+	}
+	if !strings.Contains(out, "props.SlotHeader") {
+		t.Errorf("expected props.SlotHeader in output, got: %s", out)
+	}
+}
+
+func TestNewHtml_SlotContentFromCaller(t *testing.T) {
+	// Caller passes <slot name="header">content</slot> into Layout
+	comps := map[string]CompInfo{
+		"layout": {Name: "Layout", Props: map[string]string{"slotheader": "slotHeader"}},
+	}
+	h, err := NewHtml([]byte(`<layout><slot name="header"><span>title</span></slot></layout>`))
+	if err != nil {
+		t.Fatalf("NewHtml: %v", err)
+	}
+	out, err := h.RenderGolangCode(comps)
+	if err != nil {
+		t.Fatalf("RenderGolangCode: %v", err)
+	}
+	if !strings.Contains(out, "LayoutComp(") || !strings.Contains(out, "SlotHeader") {
+		t.Errorf("expected LayoutComp and SlotHeader in output, got: %s", out)
+	}
+	if !strings.Contains(out, "span") {
+		t.Errorf("expected slot content (span) in output, got: %s", out)
+	}
+}
+
+func TestNewHtml_MultipleBracedExpressions(t *testing.T) {
+	// Text with multiple {expr} must produce valid Go (comma-separated args), not one broken expression
+	h, err := NewHtml([]byte("<p>{props.Author} — {props.Role}</p>"))
+	if err != nil {
+		t.Fatalf("NewHtml: %v", err)
+	}
+	comps := map[string]CompInfo{}
+	out, err := h.RenderGolangCode(comps)
+	if err != nil {
+		t.Fatalf("RenderGolangCode: %v", err)
+	}
+	// Should have both identifiers and a comma (R(..., ..., ...))
+	if !strings.Contains(out, "props.Author") || !strings.Contains(out, "props.Role") {
+		t.Errorf("expected both props.Author and props.Role in output, got: %s", out)
+	}
+	if !strings.Contains(out, ",") {
+		t.Errorf("multiple expressions should be comma-separated in R(...), got: %s", out)
+	}
+}

@@ -70,6 +70,41 @@ func importAlias(imp string) string {
 	return ""
 }
 
+// importPath returns the quoted path from an import line (e.g. `t "pkg/path"` -> "pkg/path").
+// Used to deduplicate imports by path.
+func importPath(imp string) string {
+	imp = strings.TrimSpace(imp)
+	parts := strings.Fields(imp)
+	for _, p := range parts {
+		if strings.HasPrefix(p, `"`) && strings.HasSuffix(p, `"`) {
+			return strings.Trim(p, `"`)
+		}
+	}
+	return ""
+}
+
+// deduplicateImports keeps one import per path (same path in multiple files → single import).
+// Prefers the form that has an explicit alias when present. Deterministic: sorted by path.
+func deduplicateImports(imports []string) []string {
+	byPath := make(map[string]string)
+	for _, imp := range imports {
+		path := importPath(imp)
+		if path == "" {
+			continue
+		}
+		existing, ok := byPath[path]
+		// Prefer form with alias (two or more tokens before the quoted path)
+		if !ok || (importAlias(imp) != "" && importAlias(existing) == "") {
+			byPath[path] = imp
+		}
+	}
+	out := make([]string, 0, len(byPath))
+	for _, imp := range byPath {
+		out = append(out, imp)
+	}
+	return out
+}
+
 // componentFileName returns a safe filename for the component (e.g. "SampleTable" -> "SampleTable.go").
 func componentFileName(name string) string {
 	var b strings.Builder
@@ -151,6 +186,7 @@ func Run(src, dist string, opts *RunOptions) error {
 			componentFileContent[name] = f.Content
 		}
 	}
+	imports = deduplicateImports(imports)
 	sort.Strings(imports)
 
 	goCodes := map[string]string{}
@@ -185,21 +221,26 @@ func Run(src, dist string, opts *RunOptions) error {
 			if err := yaml.Unmarshal([]byte(props), &propsMap); err != nil {
 				return wrapTranspileErr(name, componentSource[name], componentFileContent[name], err)
 			}
-
-			if _, ok := components[name]; !ok {
-				for k := range propsMap {
-					components[strings.ToLower(name)].Props[strings.ToLower(k)] = k
-				}
-			}
-
-			s := gocode.ConstructStruct(propsMap, name)
-			structs = append(structs, s)
-			structMap[name] = s
-		} else {
-			s := gocode.ConstructStruct(map[string]string{}, name)
-			structs = append(structs, s)
-			structMap[name] = s
 		}
+		if propsMap == nil {
+			propsMap = make(map[string]string)
+		}
+		if html, ok := m["html"]; ok {
+			slotNames, err := element.SlotNamesFromHTML([]byte(html))
+			if err != nil {
+				return wrapTranspileErr(name, componentSource[name], componentFileContent[name], err)
+			}
+			for _, slotName := range slotNames {
+				key := "slot" + utils.Capitalize(slotName)
+				propsMap[key] = "Element"
+			}
+		}
+		for k := range propsMap {
+			components[strings.ToLower(name)].Props[strings.ToLower(k)] = k
+		}
+		s := gocode.ConstructStruct(propsMap, name)
+		structs = append(structs, s)
+		structMap[name] = s
 	}
 
 	for _, name := range sectionNames {

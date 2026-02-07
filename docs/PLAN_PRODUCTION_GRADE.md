@@ -69,14 +69,14 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 ---
 
-### 2.2 Optional incremental / watch mode in CLI
+### 2.2 Optional incremental / watch mode in CLI ✅
 
 **Problem:** Developers want fast feedback without re-transpiling everything.
 
 **Deliverables:**
 - [ ] Document that “incremental” can mean: only re-parse changed `.html` files and only regenerate affected components (optional Phase 2.2b).
-- [ ] Or: provide a simple `--watch` that re-runs full transpile on file change (no new deps in core; can be a separate cmd or example using fsnotify).
-- [ ] Keep current Taskfile-based watch as the reference; don’t couple core to fwatcher.
+- [x] Or: provide a simple `--watch` that re-runs full transpile on file change (no new deps in core; can be a separate cmd or example using fsnotify).
+- [x] Keep current Taskfile-based watch as the reference; don’t couple core to fwatcher.
 
 **Acceptance:** There is a documented way to get fast re-transpile during development (full or incremental).
 
@@ -100,14 +100,14 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 ---
 
-### 3.2 Slots / partials (layout placeholders)
+### 3.2 Slots / partials (layout placeholders) ✅
 
 **Problem:** Complex layouts need named placeholders (header, sidebar, content) without prop drilling.
 
 **Deliverables:**
-- [ ] Design: e.g. `<slot name="header"/>` in a layout component and `<Layout><slot:header>...</slot:header></Layout>` at call site (or equivalent syntax).
-- [ ] Transpile slots to children or named children in the element model (extend `element` if needed).
-- [ ] Document and add tests for at least one layout + page example.
+- [x] Design: `<slot name="header"/>` in a layout component and `<Layout><slot name="header">...</slot></Layout>` at call site.
+- [x] Transpile slots to named props (e.g. `SlotHeader Element`) in the component struct; layout emits `R(props.SlotHeader)`; callers’ `<slot name="header">...</slot>` become slot props.
+- [x] Document and add tests: `SlotNamesFromHTML`, slot placeholder rendering, and caller passing slot content.
 
 **Acceptance:** A layout component can define placeholders that callers fill by name.
 
@@ -131,26 +131,26 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 **Goal:** Large codebases can split by feature/domain and use proper types.
 
-### 4.1 Per-file (or per-component) imports
+### 4.1 Per-file (or per-component) imports ✅
 
 **Problem:** Single global “imports” block doesn’t scale; components can’t use different packages.
 
 **Deliverables:**
-- [ ] Allow imports in each component/file (e.g. repeat `<!-- * define "imports" -->` per file, or a per-component imports block).
-- [ ] Merge and deduplicate imports when generating (same path → single import with optional alias).
-- [ ] Emit imports at top of generated file(s); keep deterministic order (e.g. sort by path).
+- [x] Allow imports in each component/file (e.g. repeat `<!-- * define "imports" -->` per file, or a per-component imports block).
+- [x] Merge and deduplicate imports when generating (same path → single import with optional alias).
+- [x] Emit imports at top of generated file(s); keep deterministic order (e.g. sort by path).
 
 **Acceptance:** Two components can use different external packages without conflict; generated code compiles.
 
 ---
 
-### 4.2 Configurable output package and path
+### 4.2 Configurable output package and path ✅
 
 **Problem:** Generated code is tied to a single package name and location.
 
 **Deliverables:**
-- [ ] CLI flags: e.g. `--pkg=name`, `--out=path` (or derive package from `--dist` path).
-- [ ] Document that apps can point `--dist` to a subpackage of their module (e.g. `internal/gohtmlx/gen`).
+- [x] CLI flags: e.g. `--pkg=name`, `--out=path` (or derive package from `--dist` path).
+- [x] Document that apps can point `--dist` to a subpackage of their module (e.g. `internal/gohtmlx/gen`).
 
 **Acceptance:** Generated code can live in a chosen package path and package name.
 

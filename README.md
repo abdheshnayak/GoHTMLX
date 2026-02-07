@@ -96,6 +96,8 @@ Use `<if>`, `<elseif>`, and `<else>` to show or hide blocks based on props:
 
 `condition` is a boolean expression (e.g. `props.ShowFooter`, `len(props.Items) > 0`). It is transpiled to Go `if`/`else` in the generated code.
 
+**Slots:** Layout components can define placeholders with `<slot name="header"/>` (or `name="footer"`, etc.). Callers pass content with `<Layout><slot name="header"><h1>Title</h1></slot></Layout>`. Slots become struct fields (e.g. `SlotHeader Element`) and are rendered as `R(props.SlotHeader)` in the layout.
+
 ### Using Components in Go
 
 ```go
@@ -153,7 +155,9 @@ This command will transpile HTML components from the `src` directory and generat
 - `--src`: Directory containing the source `.html` component files.
 - `--dist`: Directory where generated Go code is written (e.g. `dist/gohtmlxc/`).
 - `--single-file`: Emit one `comp_generated.go` (legacy). Default is one file per component plus `imports.go`.
-- `--pkg`: Generated package name (default `gohtmlxc`).
+- `--pkg`: Generated package name (default `gohtmlxc`). You can point `--dist` to a subpackage of your module (e.g. `internal/gen` or `example/dist`) so the generated package lives where you want.
+
+Imports from each file are merged and deduplicated by path (same path in multiple `<!-- * define "imports" -->` blocks → single import); order is deterministic.
 
 ### Exit codes
 
@@ -162,6 +166,15 @@ This command will transpile HTML components from the `src` directory and generat
 - **2** — Invalid arguments or missing required flags (e.g. missing `--src` or `--dist`).
 
 Scripts and CI can rely on `gohtmlx --src=... --dist=... && go build ...`.
+
+### Development and watch
+
+For fast re-transpile during development, use the **Taskfile-based watch** (no extra dependencies in the core CLI):
+
+- **From repo root:** `task dev` — watches `go` and `html` under the repo, re-runs full transpile then exits (restart to run again), or use `nodemon -e go,html -i example/dist --exec "go run . --src=example/src --dist=example/dist"` to loop.
+- **From example:** `task dev` — runs transpile watch (root), app watch, and CSS watch in parallel so that changing `.html` triggers a re-transpile and app restart.
+
+Each run is a **full transpile** (all `.html` files under `--src`). A future enhancement could support incremental mode (only re-parse changed files and regenerate affected components).
 
 ## How It Works
 
