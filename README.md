@@ -209,6 +209,7 @@ Each run is a **full transpile** (all `.html` files under `--src`). *Incremental
 - **[Template reference](docs/TEMPLATE_REFERENCE.md)** — define, props, html, for, if, slots, attrs.
 - **[Production checklist](docs/PRODUCTION_CHECKLIST.md)** — deterministic build, exit codes, one-file-per-component, CI, security.
 - **[Migration / upgrading](docs/MIGRATION.md)** — how to upgrade when we introduce breaking changes.
+- **[Releasing](docs/RELEASING.md)** — how to tag versions and publish binaries (maintainers).
 - **[Production-grade plan](docs/PLAN_PRODUCTION_GRADE.md)** — full roadmap (phases 1–8: determinism, errors, scaling, template language, testing, docs, CI).
 - **[Example README](example/README.md)** — showcase app (components, for, if, layout) and how to run it.
 

@@ -300,7 +300,7 @@ This document outlines the work required to make GoHTMLX production-grade for la
 **Deliverables:**
 - [x] Semantic versioning: v0.x for pre-production; v1.0 when “production-grade” criteria are met.
 - [x] Changelog (CHANGELOG.md) for notable changes; document breaking changes when releasing.
-- [ ] Optional: tag releases and publish binaries (e.g. GitHub Releases) for `go install github.com/...@latest`.
+- [x] Optional: tag releases and publish binaries (e.g. GitHub Releases) for `go install github.com/...@latest`; see [docs/RELEASING.md](RELEASING.md) and `.github/workflows/release.yml`.
 
 **Acceptance:** Users can depend on a specific version and read what changed.
 
