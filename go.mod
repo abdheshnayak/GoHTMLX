@@ -1,10 +1,10 @@
 module github.com/abdheshnayak/gohtmlx
 
-go 1.23
+go 1.24
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.6
-	golang.org/x/net v0.33.0
+	golang.org/x/net v0.45.0
 	sigs.k8s.io/yaml v1.4.0
 )
 
