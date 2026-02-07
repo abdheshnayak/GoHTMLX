@@ -17,7 +17,7 @@ import (
 func ConstructStruct(props map[string]string, name string) string {
 	var buffer strings.Builder
 	buffer.WriteString("type ")
-	buffer.WriteString(fmt.Sprintf("%s", name))
+	buffer.WriteString(name)
 	buffer.WriteString(" struct {\n")
 
 	keys := make([]string, 0, len(props))

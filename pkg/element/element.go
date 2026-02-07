@@ -43,11 +43,6 @@ type Element interface {
 	Render(io.Writer) (int, error)
 }
 
-type forElement[T any] struct {
-	items    []T
-	children Element
-}
-
 type element struct {
 	tag       string
 	childrens []Element
@@ -63,36 +58,36 @@ func (t renderElement) Render(w io.Writer) (int, error) {
 	var buffer strings.Builder
 
 	for _, item := range t.items {
-		switch item.(type) {
+		switch item := item.(type) {
 		case int:
-			buffer.WriteString(fmt.Sprintf("%d", item.(int)))
+			buffer.WriteString(fmt.Sprintf("%d", item))
 		case float64:
-			buffer.WriteString(fmt.Sprintf("%f", item.(float64)))
+			buffer.WriteString(fmt.Sprintf("%f", item))
 		case bool:
-			buffer.WriteString(fmt.Sprintf("%t", item.(bool)))
+			buffer.WriteString(fmt.Sprintf("%t", item))
 		case *string:
-			buffer.WriteString(fmt.Sprintf("%s", *item.(*string)))
+			buffer.WriteString(*item)
 		case *int:
-			buffer.WriteString(fmt.Sprintf("%d", *item.(*int)))
+			buffer.WriteString(fmt.Sprintf("%d", *item))
 		case *float64:
-			buffer.WriteString(fmt.Sprintf("%f", *item.(*float64)))
+			buffer.WriteString(fmt.Sprintf("%f", *item))
 		case *bool:
-			buffer.WriteString(fmt.Sprintf("%t", *item.(*bool)))
+			buffer.WriteString(fmt.Sprintf("%t", *item))
 		case *Element:
-			(*item.(*Element)).Render(&buffer)
+			_, _ = (*item).Render(&buffer)
 		case *[]Element:
-			for _, child := range *item.(*[]Element) {
-				child.Render(&buffer)
+			for _, child := range *item {
+				_, _ = child.Render(&buffer)
 			}
 		case string:
-			buffer.WriteString(strings.ReplaceAll(item.(string), nbspChar, "&nbsp;"))
+			buffer.WriteString(strings.ReplaceAll(item, nbspChar, "&nbsp;"))
 			// buffer.WriteString(item.(string))
 
 		case Element:
-			item.(Element).Render(&buffer)
+			_, _ = item.Render(&buffer)
 		case []Element:
-			for _, child := range item.([]Element) {
-				child.Render(&buffer)
+			for _, child := range item {
+				_, _ = child.Render(&buffer)
 			}
 		default:
 			utils.Log.Error("error", "for", fmt.Sprintf("%v", item))
@@ -108,12 +103,6 @@ func R(items ...interface{}) Element {
 	return renderElement{
 		items: items,
 	}
-}
-
-type renderComp struct {
-	name      string
-	props     interface{}
-	childrens []Element
 }
 
 // E builds an HTML element with the given tag, attrs, and children (used by generated code).
@@ -144,16 +133,16 @@ func (e element) Render(w io.Writer) (int, error) {
 		buffer.WriteString(k)
 		buffer.WriteString("=\"")
 
-		switch v.(type) {
+		switch v := v.(type) {
 		case string:
-			buffer.WriteString(v.(string))
+			buffer.WriteString(v)
 		case *string:
-			buffer.WriteString(fmt.Sprintf("%s", *v.(*string)))
+			buffer.WriteString(*v)
 		case Element:
-			v.(Element).Render(&buffer)
+			_, _ = v.Render(&buffer)
 		case []Element:
-			for _, child := range v.([]Element) {
-				child.Render(&buffer)
+			for _, child := range v {
+				_, _ = child.Render(&buffer)
 			}
 		default:
 			utils.Log.Error("unknown type", "for", fmt.Sprintf("%v", v))
@@ -165,7 +154,7 @@ func (e element) Render(w io.Writer) (int, error) {
 
 	buffer.WriteString(">")
 	for _, child := range e.childrens {
-		child.Render(&buffer)
+		_, _ = child.Render(&buffer)
 	}
 	buffer.WriteString("</")
 	buffer.WriteString(e.tag)

@@ -209,7 +209,7 @@ func validateGeneratedPackage(outDir, dist, pkg string, componentSource map[stri
 			filePath = filepath.Join(outDir, base)
 		}
 		var lineNum int
-		fmt.Sscanf(lineStr, "%d", &lineNum)
+		_, _ = fmt.Sscanf(lineStr, "%d", &lineNum)
 		return &TranspileError{
 			Component: component,
 			FilePath:  filePath,
