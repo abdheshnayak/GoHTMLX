@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 	htmltemplate "text/template"
@@ -61,10 +62,13 @@ func Run(src, dist string) error {
 	}
 	imports := []string{}
 	if imps, ok := gsections["imports"]; ok {
-		imps := strings.Split(strings.TrimSpace(imps), "\n")
-		for _, v := range imps {
-			imports = append(imports, strings.TrimSpace(v))
+		for _, v := range strings.Split(strings.TrimSpace(imps), "\n") {
+			s := strings.TrimSpace(v)
+			if s != "" {
+				imports = append(imports, s)
+			}
 		}
+		sort.Strings(imports)
 	}
 
 	// Parse the template
@@ -81,16 +85,20 @@ func Run(src, dist string) error {
 	goCodes := map[string]string{}
 
 	components := map[string]element.CompInfo{}
+	sectionNames := make([]string, 0, len(sections))
 	for k := range sections {
+		sectionNames = append(sectionNames, k)
 		components[strings.ToLower(k)] = element.CompInfo{
 			Name:  k,
 			Props: map[string]string{},
 		}
 	}
+	sort.Strings(sectionNames)
 
 	structs := []string{}
 
-	for name, content := range sections {
+	for _, name := range sectionNames {
+		content := sections[name]
 		hparser := htmltemplate.New("sections").Delims("<!-- |", " -->")
 		tpl, err := hparser.Parse(string(content))
 		m, err := utils.ParseSections(tpl)
@@ -116,8 +124,9 @@ func Run(src, dist string) error {
 		}
 	}
 
-	// Output the parsed map
-	for name, content := range sections {
+	// Output the parsed map (same order for deterministic output)
+	for _, name := range sectionNames {
+		content := sections[name]
 		hparser := htmltemplate.New("section-data").Delims("<!-- |", "-->")
 		tpl, err := hparser.Parse(string(content))
 		m, err := utils.ParseSections(tpl)

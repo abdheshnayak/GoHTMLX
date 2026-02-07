@@ -153,6 +153,10 @@ This command will transpile HTML components from the `src` directory and generat
 - **Enhanced Debugging:** Add tools to visualize the transpilation process.
 - **Broader Compatibility:** Extend support for additional libraries and frameworks.
 
+## Production-grade roadmap
+
+A detailed plan to make GoHTMLX production-ready for large-scale apps (deterministic builds, source-aware errors, one-file-per-component, conditionals, slots, testing, docs, CI) is in **[docs/PLAN_PRODUCTION_GRADE.md](docs/PLAN_PRODUCTION_GRADE.md)**.
+
 ---
 
 gohtmlx bridges the gap between Go and reusable HTML components, providing developers with an intuitive way to build modern, server-rendered web applications using Go. The examples and usage reflect its ability to simplify server-side HTML generation for projects requiring basic and efficient rendering.

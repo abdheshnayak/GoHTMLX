@@ -3,6 +3,7 @@ package gocode
 import (
 	"fmt"
 	"go/format"
+	"sort"
 	"strings"
 
 	"github.com/abdheshnayak/gohtmlx/pkg/utils"
@@ -14,7 +15,13 @@ func ConstructStruct(props map[string]string, name string) string {
 	buffer.WriteString(fmt.Sprintf("%s", name))
 	buffer.WriteString(" struct {\n")
 
-	for k, v := range props {
+	keys := make([]string, 0, len(props))
+	for k := range props {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		v := props[k]
 		buffer.WriteString(utils.Capitalize(k))
 		buffer.WriteString(" ")
 		buffer.WriteString(v)
@@ -42,8 +49,14 @@ func ConstructSource(codes map[string]string, structs []string, imports []string
 
 	builder.WriteString(". \"github.com/abdheshnayak/gohtmlx/pkg/element\"\n")
 
-	for _, v := range imports {
-		builder.WriteString(fmt.Sprintf("%s\n", strings.TrimSpace(v)))
+	importList := make([]string, len(imports))
+	copy(importList, imports)
+	sort.Strings(importList)
+	for _, v := range importList {
+		s := strings.TrimSpace(v)
+		if s != "" {
+			builder.WriteString(fmt.Sprintf("%s\n", s))
+		}
 	}
 
 	builder.WriteString(")\n\n")
@@ -51,7 +64,13 @@ func ConstructSource(codes map[string]string, structs []string, imports []string
 	structsByte := strings.Join(structs, "\n\n")
 	builder.WriteString(string(structsByte))
 
-	for k, v := range codes {
+	codeKeys := make([]string, 0, len(codes))
+	for k := range codes {
+		codeKeys = append(codeKeys, k)
+	}
+	sort.Strings(codeKeys)
+	for _, k := range codeKeys {
+		v := codes[k]
 		builder.WriteString(fmt.Sprintf("func %sComp(", k))
 		builder.WriteString(fmt.Sprintf("props %s, attrs Attrs, children ...Element", k))
 		builder.WriteString(") Element {\n")
