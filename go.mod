@@ -4,7 +4,6 @@ go 1.23.4
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.6
-	github.com/nxtcoder17/fwatcher v1.0.3
 	golang.org/x/net v0.33.0
 	sigs.k8s.io/yaml v1.4.0
 )

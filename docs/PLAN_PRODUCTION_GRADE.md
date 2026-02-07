@@ -169,38 +169,38 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 ---
 
-## Phase 5: Decouple core and optional integrations
+## Phase 5: Decouple core and optional integrations ✅
 
 **Goal:** Core is framework-agnostic; Fiber/watcher are optional.
 
-### 5.1 Minimal core
+### 5.1 Minimal core ✅
 
 **Deliverables:**
-- [ ] Move `Run(src, dist string) error` and all parsing/codegen into a package that **does not** import Fiber or fwatcher (e.g. `pkg/transpiler` or `pkg/gohtmlx`).
-- [ ] `main` (cmd) only: flags, call `transpiler.Run`, exit code. No logging to a specific framework.
-- [ ] Keep `pkg/element` as the runtime used by generated code; no Fiber there.
+- [x] Move `Run(src, dist string) error` and all parsing/codegen into a package that **does not** import Fiber or fwatcher (e.g. `pkg/transpiler` or `pkg/gohtmlx`).
+- [x] `main` (cmd) only: flags, call `transpiler.Run`, exit code. No logging to a specific framework.
+- [x] Keep `pkg/element` as the runtime used by generated code; no Fiber there.
 
 **Acceptance:** `go build ./pkg/...` (excluding cmd that use Fiber) builds without Fiber/fwatcher in core.
 
 ---
 
-### 5.2 Optional integrations
+### 5.2 Optional integrations ✅
 
 **Deliverables:**
-- [ ] Move Fiber logger (and any Fiber-specific helpers) to an optional package, e.g. `pkg/integration/fiber` or `examples/fiber`, and use only from example/main.
-- [ ] Remove direct dependency on `nxtcoder17/fwatcher` from core. Use it only in example Taskfile or a separate `cmd/gohtmlx-watch` if you add one.
-- [ ] `go.mod`: core has no Fiber/fwatcher; example (or integration package) has them.
+- [x] Move Fiber logger (and any Fiber-specific helpers) to an optional package, e.g. `pkg/integration/fiber` or `examples/fiber`, and use only from example/main.
+- [x] Remove direct dependency on `nxtcoder17/fwatcher` from core. Use it only in example Taskfile or a separate `cmd/gohtmlx-watch` if you add one.
+- [x] `go.mod`: core has no Fiber/fwatcher; example (or integration package) has them.
 
 **Acceptance:** Core has minimal deps; examples show how to plug in Fiber and watch.
 
 ---
 
-### 5.3 Logging interface
+### 5.3 Logging interface ✅
 
 **Deliverables:**
-- [ ] Define a small logger interface (e.g. `Info(msg string, kvs ...any)`, `Error(msg string, kvs ...any)`) in core.
-- [ ] Default: no-op or stdlog; CLI can inject a simple logger (e.g. slog).
-- [ ] Use this in transpiler for progress and errors (errors still go to structured TranspileError).
+- [x] Define a small logger interface (e.g. `Info(msg string, kvs ...any)`, `Error(msg string, kvs ...any)`) in core.
+- [x] Default: no-op or stdlog; CLI can inject a simple logger (e.g. slog).
+- [x] Use this in transpiler for progress and errors (errors still go to structured TranspileError).
 
 **Acceptance:** Core doesn’t force a logging implementation; CLI can log to stdout/slog.
 

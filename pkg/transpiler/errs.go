@@ -1,4 +1,4 @@
-package main
+package transpiler
 
 import (
 	"fmt"
@@ -31,8 +31,6 @@ func (e *TranspileError) Error() string {
 	return e.Message
 }
 
-// lineForComponent returns the 1-based line number in content where the component
-// define block for name starts (e.g. <!-- + define "Name" -->).
 func lineForComponent(content []byte, name string) int {
 	search := `define "` + name + `"`
 	s := string(content)
@@ -43,7 +41,6 @@ func lineForComponent(content []byte, name string) int {
 	return 1 + strings.Count(s[:idx], "\n")
 }
 
-// snippetAtLine returns a single line (or a few lines) around the given 1-based line.
 func snippetAtLine(content []byte, line int, contextLines int) string {
 	lines := strings.Split(string(content), "\n")
 	if line < 1 || line > len(lines) {
@@ -60,8 +57,6 @@ func snippetAtLine(content []byte, line int, contextLines int) string {
 	return strings.Join(lines[start:end], "\n")
 }
 
-// wrapTranspileErr builds a TranspileError for the given component and file.
-// fileContent is the full file bytes (used to compute line and snippet). If err is nil, returns nil.
 func wrapTranspileErr(component, filePath string, fileContent []byte, err error) error {
 	if err == nil {
 		return nil

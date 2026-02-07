@@ -2,11 +2,15 @@ package main
 
 import (
 	"errors"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/abdheshnayak/gohtmlx/pkg/transpiler"
+	"github.com/abdheshnayak/gohtmlx/pkg/utils"
 )
 
 // Set GOHTMLX_UPDATE_GOLDEN=1 to update golden files when the transpiler output intentionally changes.
@@ -21,10 +25,11 @@ func TestRun_DeterministicOutput(t *testing.T) {
 	dist1 := t.TempDir()
 	dist2 := t.TempDir()
 
-	if err := Run(src, dist1); err != nil {
+	utils.Log = utils.NewSlogLogger(slog.Default())
+	if err := transpiler.Run(src, dist1); err != nil {
 		t.Fatalf("first Run: %v", err)
 	}
-	if err := Run(src, dist2); err != nil {
+	if err := transpiler.Run(src, dist2); err != nil {
 		t.Fatalf("second Run: %v", err)
 	}
 
@@ -65,12 +70,13 @@ func TestRun_SourceTrackingError(t *testing.T) {
 	if _, err := os.Stat(src); err != nil {
 		t.Skipf("testdata not found: %v", err)
 	}
+	utils.Log = utils.NewSlogLogger(slog.Default())
 	dist := t.TempDir()
-	err := Run(src, dist)
+	err := transpiler.Run(src, dist)
 	if err == nil {
 		t.Fatal("expected error from invalid props YAML")
 	}
-	var te *TranspileError
+	var te *transpiler.TranspileError
 	if !errors.As(err, &te) {
 		t.Fatalf("expected TranspileError, got %T: %v", err, err)
 	}
@@ -95,8 +101,9 @@ func TestRun_Golden(t *testing.T) {
 		t.Skipf("golden want file not found: %v", err)
 	}
 
+	utils.Log = utils.NewSlogLogger(slog.Default())
 	dist := t.TempDir()
-	if err := Run(src, dist); err != nil {
+	if err := transpiler.Run(src, dist); err != nil {
 		t.Fatalf("Run: %v", err)
 	}
 	gotPath := filepath.Join(dist, "gohtmlxc", "comp_generated.go")
@@ -155,7 +162,8 @@ func TestRun_IntegrationBuild(t *testing.T) {
 	dist := filepath.Join(root, "testdata", "golden", "out")
 	_ = os.RemoveAll(dist)
 	defer os.RemoveAll(dist)
-	if err := Run(src, dist); err != nil {
+	utils.Log = utils.NewSlogLogger(slog.Default())
+	if err := transpiler.Run(src, dist); err != nil {
 		t.Fatalf("Run: %v", err)
 	}
 	relPkg, _ := filepath.Rel(root, filepath.Join(dist, "gohtmlxc"))

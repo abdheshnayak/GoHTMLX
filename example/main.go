@@ -6,16 +6,18 @@ import (
 
 	"github.com/abdheshnayak/gohtmlx/example/src/comps"
 	"github.com/abdheshnayak/gohtmlx/pkg/element"
+	gohtmlxfiber "github.com/abdheshnayak/gohtmlx/pkg/integration/fiber"
 	"github.com/abdheshnayak/gohtmlx/pkg/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
+	utils.Log = gohtmlxfiber.Log
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
 
-	app.Use(utils.FiberLogger)
+	app.Use(gohtmlxfiber.FiberLogger)
 
 	app.Static("/", "./dist/static", fiber.Static{
 		Compress:      true,
@@ -67,7 +69,7 @@ func main() {
 		return nil
 	})
 
-	utils.Log.Info("Listening on port 3000")
+	gohtmlxfiber.Log.Info("Listening on port 3000")
 	if err := app.Listen(":3000"); err != nil {
 		panic(err)
 	}
