@@ -23,7 +23,17 @@ go run . --src=example/src --dist=example/dist
 cd example && go run .
 ```
 
-Then open http://localhost:3000
+Then open [http://localhost:3000](http://localhost:3000).
+
+## Run with Docker
+
+To run the example without installing Go or Node:
+
+```bash
+docker run --rm -p 3000:3000 ghcr.io/abdheshnayak/htmlx:example
+```
+
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Development (watch)
 

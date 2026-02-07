@@ -25,6 +25,14 @@ cd example
 task dev
 ```
 
+### or run the example with Docker
+
+```bash
+docker run --rm -p 3000:3000 ghcr.io/abdheshnayak/htmlx:example
+```
+
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
+
 ## Concepts
 
 - **Components** — Defined in `.html` with `<!-- + define "Name" -->` and optional `props` (YAML) and required `html` sections. Transpiled to Go structs and `NameComp(props, attrs, children...)` functions.
