@@ -10,12 +10,15 @@ type Form struct{}
 type NavLink struct {
 	Label string
 	Href  string
+	IsCta string // optional CSS class, e.g. "nav-cta"
 }
 
 type Feature struct {
 	Title       string
 	Description string
 	Icon        string
+	Code        string // optional; HTML-escaped snippet shown below description when ShowCode is true
+	ShowCode    bool
 }
 
 type Stat struct {

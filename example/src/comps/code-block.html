@@ -7,12 +7,12 @@ showDescription: bool
 code: string
 <!-- | end -->
 <!-- | define "html" -->
-<div class="code-block">
-  <h4 class="code-block-title">{props.Title}</h4>
+<div class="mb-6">
+  <h4 class="mt-0 mb-1.5 text-[0.9375rem] font-semibold text-gray-900 dark:text-zinc-50">{props.Title}</h4>
   <if condition={props.ShowDescription}>
-    <p class="code-block-desc">{props.Description}</p>
+    <p class="text-gray-500 dark:text-zinc-500 text-sm m-0 mb-2">{props.Description}</p>
   </if>
-  <pre class="code-block-pre"><code class="code-block-code">{props.Code}</code></pre>
+  <pre class="m-0 p-4 bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg overflow-x-auto"><code class="font-mono text-xs text-gray-600 dark:text-zinc-400 whitespace-pre">{props.Code}</code></pre>
 </div>
 <!-- | end -->
 <!-- + end -->

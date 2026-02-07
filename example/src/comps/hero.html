@@ -1,13 +1,32 @@
-<!-- Hero: title + subtitle section -->
+<!-- Hero: title, optional badge, subtitle, optional CTAs -->
 <!-- + define "Hero" -->
 <!-- | define "props" -->
 title: string
 subtitle: string
+badge: string
+showBadge: bool
+showCtaPrimary: bool
+ctaPrimaryText: string
+ctaPrimaryHref: string
+showCtaSecondary: bool
+ctaSecondaryText: string
+ctaSecondaryHref: string
 <!-- | end -->
 <!-- | define "html" -->
-<section class="hero">
-  <h1>{props.Title}</h1>
-  <p>{props.Subtitle}</p>
+<section class="text-center py-14 px-8 mb-10 bg-gradient-to-b from-gray-100 to-gray-50 dark:from-zinc-900 dark:to-zinc-950 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm">
+  <if condition={props.ShowBadge}>
+    <p class="inline-block py-1.5 px-3 bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 rounded-full text-xs font-medium mb-5">{props.Badge}</p>
+  </if>
+  <h1 class="text-4xl font-bold mt-0 mb-3 tracking-tight leading-tight text-gray-900 dark:text-zinc-50">{props.Title}</h1>
+  <p class="text-gray-600 dark:text-zinc-400 text-lg mt-0 mb-6 max-w-[540px] mx-auto">{props.Subtitle}</p>
+  <if condition={props.ShowCtaPrimary}>
+    <div class="flex flex-wrap gap-3 justify-center">
+      <a class="inline-flex items-center justify-center py-2.5 px-5 rounded-lg text-[0.9375rem] font-medium no-underline bg-indigo-500 text-white hover:bg-indigo-400 transition-colors" href={props.CtaPrimaryHref}>{props.CtaPrimaryText}</a>
+      <if condition={props.ShowCtaSecondary}>
+        <a class="inline-flex items-center justify-center py-2.5 px-5 rounded-lg text-[0.9375rem] font-medium no-underline bg-transparent text-gray-600 dark:text-zinc-400 border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-zinc-50 hover:border-gray-400 dark:hover:border-zinc-500 transition-colors" href={props.CtaSecondaryHref}>{props.CtaSecondaryText}</a>
+      </if>
+    </div>
+  </if>
 </section>
 <!-- | end -->
 <!-- + end -->
@@ -18,6 +37,6 @@ subtitle: string
 message: string
 <!-- | end -->
 <!-- | define "html" -->
-<div class="alert alert-info">{props.Message}</div>
+<div class="py-4 px-5 rounded-lg mb-6 border border-indigo-500 bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[0.9375rem]">{props.Message}</div>
 <!-- | end -->
 <!-- + end -->

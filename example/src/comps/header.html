@@ -1,14 +1,16 @@
-<!-- AppHeader: nav bar with dynamic links (uses for loop) -->
+<!-- AppHeader: nav bar with links; last link can be styled as CTA via isCta -->
 <!-- + define "AppHeader" -->
 <!-- | define "props" -->
 links: "[]t.NavLink"
 <!-- | end -->
 <!-- | define "html" -->
-<nav class="nav">
-  <a class="nav-brand" href="/">GoHTMLX</a>
-  <ul class="nav-links">
+<nav class="flex items-center justify-between max-w-[1100px] mx-auto px-4 py-4 border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950">
+  <a class="font-bold text-xl text-gray-900 dark:text-zinc-50 no-underline tracking-tight hover:text-gray-900 dark:hover:text-zinc-50" href="/">GoHTMLX</a>
+  <ul class="flex items-center gap-1 list-none m-0 p-0">
     <for items={props.Links} as="link">
-      <li><a href={link.Href}>{link.Label}</a></li>
+      <li class={link.IsCta}>
+        <a class="text-gray-600 dark:text-zinc-400 no-underline py-2 px-3 rounded-lg text-[0.9375rem] hover:text-gray-900 dark:hover:text-zinc-50 hover:bg-gray-100 dark:hover:bg-zinc-900" href={link.Href}>{link.Label}</a>
+      </li>
     </for>
   </ul>
 </nav>

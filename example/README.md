@@ -1,17 +1,15 @@
-# GoHTMLX Example — Showcase app
+# GoHTMLX Example — Community showcase
 
-This example is a **showcase** of GoHTMLX features: multiple components, props, `<for>` loops, `<if>` conditionals, and a full page layout. It runs as a Fiber app on port 3000.
+A **modern, community-oriented showcase** of GoHTMLX: landing-style layout, hero with CTAs, quick start, features, template syntax, and a full coding guide. Built to attract users and contributors. Runs as a Fiber app on port 3000.
 
 ## What it demonstrates
 
-- **Components:** PageStyle, AppHeader, Hero, Alert, FeatureCard, StatCard, TestimonialCard, Sidebar, AppFooter, **SlotLayout**, **DocSection**, Home.
-- **Props and types:** NavLink, Feature, Stat, Testimonial, DocSection (from `src/types`); props passed from Go into the Home component.
-- **Loops:** `<for items={props.Features} as="f">` (and similar for stats, testimonials, nav links, doc sections).
-- **Conditionals:** `<if condition={props.ShowHero}>` and `<if condition={props.ShowAlert}>` to toggle hero and alert.
-- **Slots:** SlotLayout defines `<slot name="header"/>`, `<slot name="body"/>`, `<slot name="footer"/>`; Home fills them with `<SlotLayout><slot name="header">…</slot>…</SlotLayout>`.
-- **Template features section:** A dedicated section that explains and labels each feature (components & props, loops, conditionals, slots) with live examples.
-- **Coding guide:** Step-by-step teaching section with code snippets: file structure, defining a component, expressions and props, loops, conditionals, slots, and how to transpile and use the generated Go.
-- **Layout:** Single-page layout with header, main content (features, stats, testimonials, template features, coding guide), and sidebar.
+- **Landing layout:** Nav with CTA, hero (badge + title + lead + primary/secondary buttons), quick start block, feature grid, stats, template syntax with slots demo, coding guide, testimonials, footer with GitHub/Docs/Contributing.
+- **Components:** PageStyle, AppHeader, Hero (with optional badge and CTAs), Alert, FeatureCard, StatCard, TestimonialCard, Sidebar, AppFooter, SlotLayout, DocSection, CodeBlock, Home.
+- **Props and types:** NavLink (with optional `IsCta` for nav styling), Feature, Stat, Testimonial, DocSection, CodeExample; Hero supports badge and dual CTAs.
+- **Loops & conditionals:** `<for>`, `<if>`/`<elseif>`/`<else>` used throughout (features, doc sections, code examples, nav).
+- **Slots:** SlotLayout with header/body/footer slots; filled at call site in the Template syntax section.
+- **Coding guide:** Step-by-step snippets (HTML-escaped so tags display as text): file structure, define component, expressions, loops, conditionals, slots, transpile & use in Go.
 
 ## Run it
 
@@ -19,7 +17,7 @@ From the **repository root**:
 
 ```bash
 # Transpile (generates Go under example/dist/gohtmlxc/)
-go run . --src=example/src/comps --dist=example/dist
+go run . --src=example/src --dist=example/dist
 
 # Run the example app (Fiber server on :3000)
 cd example && go run .

@@ -7,12 +7,12 @@ badge: string
 showBadge: bool
 <!-- | end -->
 <!-- | define "html" -->
-<div class="doc-section">
+<div class="mb-6 p-5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl">
   <if condition={props.ShowBadge}>
-    <span class="feature-badge">{props.Badge}</span>
+    <span class="inline-block py-0.5 px-2 bg-indigo-500 text-white rounded text-xs mr-2 font-medium">{props.Badge}</span>
   </if>
-  <h3>{props.Title}</h3>
-  <p>{props.Body}</p>
+  <h3 class="mt-0 mb-1.5 text-base font-semibold text-indigo-600 dark:text-indigo-400">{props.Title}</h3>
+  <p class="text-gray-500 dark:text-zinc-500 m-0 mb-2 text-sm">{props.Body}</p>
 </div>
 <!-- | end -->
 <!-- + end -->

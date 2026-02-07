@@ -17,7 +17,7 @@ tasks:
 
   css:build:
     cmds:
-      - tailwindcss -i ./src/input.css -o ./dist/static/src/main.css
+      - tailwindcss -i ./src/input.css -o ./dist/static/main.css
   css:watch:
     cmds:
       - tailwindcss -i ./src/input.css -o ./dist/static/main.css --watch
