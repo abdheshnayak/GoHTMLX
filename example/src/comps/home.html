@@ -1,0 +1,105 @@
+<!-- Global imports: merged from all .html files; custom types for props -->
+<!-- * define "imports" -->
+t "github.com/abdheshnayak/gohtmlx/example/src/types"
+<!-- * end -->
+
+<!-- Home: page component — composes header, hero, alert, features, stats, testimonials, template-features, sidebar, footer -->
+<!-- + define "Home" -->
+<!-- | define "props" -->
+navLinks: "[]t.NavLink"
+features: "[]t.Feature"
+stats: "[]t.Stat"
+testimonials: "[]t.Testimonial"
+docSections: "[]t.DocSection"
+codeExamples: "[]t.CodeExample"
+showHero: bool
+heroTitle: string
+heroSubtitle: string
+showAlert: bool
+alertMessage: string
+<!-- | end -->
+<!-- | define "html" -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoHTMLX — Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+    <PageStyle></PageStyle>
+  </head>
+  <body>
+    <div class="page-layout">
+      <header class="layout-header">
+        <AppHeader links={props.NavLinks}></AppHeader>
+      </header>
+      <div class="layout-body">
+        <main class="layout-main">
+          <if condition={props.ShowHero}>
+            <Hero title={props.HeroTitle} subtitle={props.HeroSubtitle}></Hero>
+          </if>
+          <if condition={props.ShowAlert}>
+            <Alert message={props.AlertMessage}></Alert>
+          </if>
+          <section id="features">
+            <h2 class="section-title">Features</h2>
+            <div class="feature-grid">
+              <for items={props.Features} as="f">
+                <FeatureCard title={f.Title} description={f.Description} icon={f.Icon}></FeatureCard>
+              </for>
+            </div>
+          </section>
+          <section id="stats">
+            <h2 class="section-title">By the numbers</h2>
+            <div class="stats-row">
+              <for items={props.Stats} as="s">
+                <StatCard value={s.Value} label={s.Label}></StatCard>
+              </for>
+            </div>
+          </section>
+          <section id="testimonials">
+            <h2 class="section-title">What people say</h2>
+            <div class="testimonials">
+              <for items={props.Testimonials} as="tm">
+                <TestimonialCard quote={tm.Quote} author={tm.Author} role={tm.Role}></TestimonialCard>
+              </for>
+            </div>
+          </section>
+          <section id="template-features">
+            <h2 class="section-title">Template features</h2>
+            <p style="color: var(--muted); margin-bottom: 1.5rem;">This section explains the GoHTMLX template syntax used on this page.</p>
+            <for items={props.DocSections} as="doc">
+              <DocSection title={doc.Title} body={doc.Body} badge={doc.Badge} showBadge={doc.ShowBadge}></DocSection>
+            </for>
+            <div class="doc-section">
+              <span class="feature-badge">slots</span>
+              <h3>Slots in action</h3>
+              <p>The block below is rendered by a layout component that defines three slots; each slot is filled by the caller.</p>
+              <SlotLayout>
+                <slot name="header">This header comes from a slot</slot>
+                <slot name="body">The main content is passed as the body slot. Layouts use &lt;slot name="…"/&gt; and callers pass content with &lt;slot name="…"&gt;…&lt;/slot&gt;.</slot>
+                <slot name="footer">Slot footer — layout and content are decoupled.</slot>
+              </SlotLayout>
+            </div>
+          </section>
+          <section id="coding-guide">
+            <h2 class="section-title">Coding guide</h2>
+            <p class="coding-guide-intro">Learn how to write GoHTMLX components. Put each snippet in a <code>.html</code> file under <code>--src</code>, run <code>gohtmlx --src=... --dist=...</code>, then use the generated Go.</p>
+            <for items={props.CodeExamples} as="ex">
+              <CodeBlock title={ex.Title} description={ex.Description} showDescription={ex.ShowDescription} code={ex.Code}></CodeBlock>
+            </for>
+          </section>
+        </main>
+        <aside class="layout-sidebar">
+          <Sidebar></Sidebar>
+        </aside>
+      </div>
+      <footer class="layout-footer">
+        <AppFooter></AppFooter>
+      </footer>
+    </div>
+  </body>
+</html>
+<!-- | end -->
+<!-- + end -->

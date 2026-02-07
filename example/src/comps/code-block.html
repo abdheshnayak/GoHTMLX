@@ -1,0 +1,18 @@
+<!-- CodeBlock: teaching snippet — title, optional description, pre/code block -->
+<!-- + define "CodeBlock" -->
+<!-- | define "props" -->
+title: string
+description: string
+showDescription: bool
+code: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="code-block">
+  <h4 class="code-block-title">{props.Title}</h4>
+  <if condition={props.ShowDescription}>
+    <p class="code-block-desc">{props.Description}</p>
+  </if>
+  <pre class="code-block-pre"><code class="code-block-code">{props.Code}</code></pre>
+</div>
+<!-- | end -->
+<!-- + end -->

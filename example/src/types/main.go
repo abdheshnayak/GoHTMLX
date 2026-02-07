@@ -28,3 +28,19 @@ type Testimonial struct {
 	Author string
 	Role   string
 }
+
+// DocSection is used for the feature-showcase explanation blocks.
+type DocSection struct {
+	Title     string
+	Body      string
+	Badge     string
+	ShowBadge bool
+}
+
+// CodeExample holds a teaching snippet (title, optional description, code shown as-is; code should be HTML-escaped).
+type CodeExample struct {
+	Title           string
+	Description     string
+	ShowDescription bool
+	Code            string
+}

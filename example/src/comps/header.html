@@ -1,0 +1,16 @@
+<!-- AppHeader: nav bar with dynamic links (uses for loop) -->
+<!-- + define "AppHeader" -->
+<!-- | define "props" -->
+links: "[]t.NavLink"
+<!-- | end -->
+<!-- | define "html" -->
+<nav class="nav">
+  <a class="nav-brand" href="/">GoHTMLX</a>
+  <ul class="nav-links">
+    <for items={props.Links} as="link">
+      <li><a href={link.Href}>{link.Label}</a></li>
+    </for>
+  </ul>
+</nav>
+<!-- | end -->
+<!-- + end -->

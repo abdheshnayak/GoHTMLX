@@ -319,6 +319,10 @@ func Run(src, dist string, opts *RunOptions) error {
 			return &TranspileError{FilePath: f.Path, Line: 0, Message: err.Error()}
 		}
 		for name, content := range fileSections {
+			// Skip the root template name (e.g. "sections") which ParseSections includes from template.New("sections")
+			if name == "sections" {
+				continue
+			}
 			if _, ok := sections[name]; ok {
 				other := componentSource[name]
 				return &TranspileError{

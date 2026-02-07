@@ -1,0 +1,43 @@
+<!-- FeatureCard: feature title + description -->
+<!-- + define "FeatureCard" -->
+<!-- | define "props" -->
+title: string
+description: string
+icon: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="feature-card">
+  <h3>{props.Title}</h3>
+  <p>{props.Description}</p>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- StatCard: value + label (e.g. for stats row) -->
+<!-- + define "StatCard" -->
+<!-- | define "props" -->
+value: string
+label: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="stat-card">
+  <div class="value">{props.Value}</div>
+  <div class="label">{props.Label}</div>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- TestimonialCard: quote + author — {props.Role} (multiple expressions in one text) -->
+<!-- + define "TestimonialCard" -->
+<!-- | define "props" -->
+quote: string
+author: string
+role: string
+<!-- | end -->
+<!-- | define "html" -->
+<blockquote class="testimonial-card">
+  <p>{props.Quote}</p>
+  <footer class="author">{props.Author} — {props.Role}</footer>
+</blockquote>
+<!-- | end -->
+<!-- + end -->

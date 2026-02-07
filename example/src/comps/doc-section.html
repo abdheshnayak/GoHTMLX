@@ -1,0 +1,18 @@
+<!-- DocSection: feature explanation block (title, body, optional badge) -->
+<!-- + define "DocSection" -->
+<!-- | define "props" -->
+title: string
+body: string
+badge: string
+showBadge: bool
+<!-- | end -->
+<!-- | define "html" -->
+<div class="doc-section">
+  <if condition={props.ShowBadge}>
+    <span class="feature-badge">{props.Badge}</span>
+  </if>
+  <h3>{props.Title}</h3>
+  <p>{props.Body}</p>
+</div>
+<!-- | end -->
+<!-- + end -->
