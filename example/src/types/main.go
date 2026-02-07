@@ -19,6 +19,7 @@ type Feature struct {
 	Icon        string
 	Code        string // optional; HTML-escaped snippet shown below description when ShowCode is true
 	ShowCode    bool
+	Language    string // optional; for syntax highlighting, e.g. "language-go", "language-bash", "language-html"
 }
 
 type Stat struct {

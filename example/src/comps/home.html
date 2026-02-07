@@ -32,6 +32,7 @@ alertMessage: string
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
     <PageStyle></PageStyle>
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@2.0.4" crossorigin></script>
   </head>
   <body class="min-h-screen flex flex-col bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-50">
@@ -88,7 +89,7 @@ alertMessage: string
           <p class="text-gray-600 dark:text-zinc-400 text-[0.9375rem] mb-6">Each feature includes a short example. Code is from the GoHTMLX template syntax or CLI.</p>
           <div class="flex flex-col gap-6">
             <for items={props.Features} as="f">
-              <FeatureCard title={f.Title} description={f.Description} icon={f.Icon} code={f.Code} showCode={f.ShowCode}></FeatureCard>
+              <FeatureCard title={f.Title} description={f.Description} icon={f.Icon} code={f.Code} showCode={f.ShowCode} language={f.Language}></FeatureCard>
             </for>
           </div>
         </section>
@@ -101,6 +102,30 @@ alertMessage: string
       <AppFooter></AppFooter>
     </footer>
     <AppScript></AppScript>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script>
+      (function () {
+        var urls = [
+          'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js',
+          'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-go.min.js',
+          'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js'
+        ];
+        var i = 0;
+        function loadNext() {
+          if (i >= urls.length) {
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+            else run();
+            return;
+          }
+          var s = document.createElement('script');
+          s.src = urls[i++];
+          s.onload = loadNext;
+          document.head.appendChild(s);
+        }
+        function run() { Prism.highlightAll(); }
+        loadNext();
+      })();
+    </script>
   </body>
 </html>
 <!-- | end -->
