@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -51,5 +53,30 @@ func TestRun_DeterministicOutput(t *testing.T) {
 			t.Errorf("context second: %q", b2[start:end])
 			break
 		}
+	}
+}
+
+func TestRun_SourceTrackingError(t *testing.T) {
+	src := filepath.Join("testdata", "badprops")
+	if _, err := os.Stat(src); err != nil {
+		t.Skipf("testdata not found: %v", err)
+	}
+	dist := t.TempDir()
+	err := Run(src, dist)
+	if err == nil {
+		t.Fatal("expected error from invalid props YAML")
+	}
+	var te *TranspileError
+	if !errors.As(err, &te) {
+		t.Fatalf("expected TranspileError, got %T: %v", err, err)
+	}
+	if te.FilePath == "" {
+		t.Error("TranspileError should have FilePath set")
+	}
+	if !strings.Contains(te.FilePath, "bad.html") {
+		t.Errorf("FilePath should mention bad.html, got %q", te.FilePath)
+	}
+	if te.Message == "" {
+		t.Error("TranspileError should have Message set")
 	}
 }

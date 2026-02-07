@@ -21,17 +21,17 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 ---
 
-### 1.2 Source tracking and error reporting
+### 1.2 Source tracking and error reporting ✅
 
 **Problem:** Transpilation errors don’t point to file:line in source HTML; hard to fix at scale.
 
 **Deliverables:**
-- [ ] During HTML collection, record `(filepath, content)` and pass file path through the pipeline.
-- [ ] When parsing sections, associate each component name with its source file (and optional line/offset).
-- [ ] Define an error type (e.g. `TranspileError`) with: component name, file path, line (or offset), message, optional snippet.
-- [ ] Use it for all parse/transpile failures (unknown component, invalid props, invalid HTML, etc.).
-- [ ] Log/print errors with format: `file:line: message` (and snippet when available).
-- [ ] Exit with non-zero code on any error (already partially there; ensure all paths set exit code).
+- [x] During HTML collection, record `(filepath, content)` and pass file path through the pipeline.
+- [x] When parsing sections, associate each component name with its source file (and optional line/offset).
+- [x] Define an error type (e.g. `TranspileError`) with: component name, file path, line (or offset), message, optional snippet.
+- [x] Use it for all parse/transpile failures (unknown component, invalid props, invalid HTML, etc.).
+- [x] Log/print errors with format: `file:line: message` (and snippet when available).
+- [x] Exit with non-zero code on any error (already partially there; ensure all paths set exit code).
 
 **Acceptance:** Any parse/transpile error shows which file and (where possible) which line; exit code is non-zero.
 

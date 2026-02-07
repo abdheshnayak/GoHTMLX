@@ -36,6 +36,7 @@ func main() {
 
 	if err := Run(*src, *dist); err != nil {
 		utils.Log.Error("transpiling failed", "err", err)
+		os.Exit(1)
 	}
 }
 
@@ -46,41 +47,57 @@ func Run(src, dist string) error {
 		utils.Log.Info(fmt.Sprintf("transpiled in %s", time.Since(t)))
 	}(t)
 
-	input, err := utils.WalkAndConcatenateHTML(src)
+	files, err := utils.WalkAndReadHTMLFiles(src)
 	if err != nil {
 		return err
 	}
 
-	tmpl, err := template.New("global").Delims("<!-- *", " -->").Parse(string(input))
-	if err != nil {
-		return err
-	}
-
-	gsections, err := utils.ParseSections(tmpl)
-	if err != nil {
-		return err
-	}
+	// Merge imports and sections from all files; track source file per component
 	imports := []string{}
-	if imps, ok := gsections["imports"]; ok {
-		for _, v := range strings.Split(strings.TrimSpace(imps), "\n") {
-			s := strings.TrimSpace(v)
-			if s != "" {
-				imports = append(imports, s)
+	sections := make(map[string]string)
+	componentSource := make(map[string]string)   // component name -> file path
+	componentFileContent := make(map[string][]byte) // component name -> full file content (for line/snippet)
+
+	for _, f := range files {
+		tmplGlobal, err := template.New("global").Delims("<!-- *", " -->").Parse(string(f.Content))
+		if err != nil {
+			return &TranspileError{FilePath: f.Path, Line: 0, Message: err.Error()}
+		}
+		gsections, err := utils.ParseSections(tmplGlobal)
+		if err != nil {
+			return &TranspileError{FilePath: f.Path, Line: 0, Message: err.Error()}
+		}
+		if imps, ok := gsections["imports"]; ok {
+			for _, v := range strings.Split(strings.TrimSpace(imps), "\n") {
+				s := strings.TrimSpace(v)
+				if s != "" {
+					imports = append(imports, s)
+				}
 			}
 		}
-		sort.Strings(imports)
-	}
 
-	// Parse the template
-	tmpl, err = template.New("sections").Delims("<!-- +", " -->").Parse(string(input))
-	if err != nil {
-		return err
+		tmplSections, err := template.New("sections").Delims("<!-- +", " -->").Parse(string(f.Content))
+		if err != nil {
+			return &TranspileError{FilePath: f.Path, Line: 0, Message: err.Error()}
+		}
+		fileSections, err := utils.ParseSections(tmplSections)
+		if err != nil {
+			return &TranspileError{FilePath: f.Path, Line: 0, Message: err.Error()}
+		}
+		for name, content := range fileSections {
+			if _, ok := sections[name]; ok {
+				other := componentSource[name]
+				return &TranspileError{
+					FilePath: f.Path,
+					Message:  fmt.Sprintf("component %q already defined in %s", name, other),
+				}
+			}
+			sections[name] = content
+			componentSource[name] = f.Path
+			componentFileContent[name] = f.Content
+		}
 	}
-
-	sections, err := utils.ParseSections(tmpl)
-	if err != nil {
-		return err
-	}
+	sort.Strings(imports)
 
 	goCodes := map[string]string{}
 
@@ -101,15 +118,18 @@ func Run(src, dist string) error {
 		content := sections[name]
 		hparser := htmltemplate.New("sections").Delims("<!-- |", " -->")
 		tpl, err := hparser.Parse(string(content))
+		if err != nil {
+			return wrapTranspileErr(name, componentSource[name], componentFileContent[name], err)
+		}
 		m, err := utils.ParseSections(tpl)
 		if err != nil {
-			return err
+			return wrapTranspileErr(name, componentSource[name], componentFileContent[name], err)
 		}
 
 		var propsMap map[string]string
 		if props, ok := m["props"]; ok {
 			if err := yaml.Unmarshal([]byte(props), &propsMap); err != nil {
-				return err
+				return wrapTranspileErr(name, componentSource[name], componentFileContent[name], err)
 			}
 
 			if _, ok := components[name]; !ok {
@@ -127,22 +147,27 @@ func Run(src, dist string) error {
 	// Output the parsed map (same order for deterministic output)
 	for _, name := range sectionNames {
 		content := sections[name]
+		filePath := componentSource[name]
+		fileContent := componentFileContent[name]
 		hparser := htmltemplate.New("section-data").Delims("<!-- |", "-->")
 		tpl, err := hparser.Parse(string(content))
+		if err != nil {
+			return wrapTranspileErr(name, filePath, fileContent, err)
+		}
 		m, err := utils.ParseSections(tpl)
 		if err != nil {
-			return err
+			return wrapTranspileErr(name, filePath, fileContent, err)
 		}
 
 		if html, ok := m["html"]; ok {
 			h, err := element.NewHtml([]byte(html))
 			if err != nil {
-				return err
+				return wrapTranspileErr(name, filePath, fileContent, err)
 			}
 
 			out, err := h.RenderGolangCode(components)
 			if err != nil {
-				return err
+				return wrapTranspileErr(name, filePath, fileContent, err)
 			}
 
 			goCodes[name] = out
