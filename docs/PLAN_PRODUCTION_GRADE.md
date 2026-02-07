@@ -54,16 +54,16 @@ This document outlines the work required to make GoHTMLX production-grade for la
 
 **Goal:** Large apps don’t hit a single huge file; builds stay fast and reviewable.
 
-### 2.1 One generated file per component (or per source file)
+### 2.1 One generated file per component (or per source file) ✅
 
 **Problem:** One `comp_generated.go` for all components doesn’t scale (merge conflicts, compile time).
 
 **Deliverables:**
-- [ ] Add a mode (e.g. `--one-file-per-component` or make it default and keep `--single-file` for backward compatibility):
+- [x] Add a mode (e.g. `--one-file-per-component` or make it default and keep `--single-file` for backward compatibility):
   - Emit `{ComponentName}.go` (or `{filename_stem}_gen.go` per source file) under a single output package directory.
-- [ ] Shared pieces: one small file for shared types/imports (or embed in first file), or a `gohtmlx_runtime.go` that stays minimal.
-- [ ] Ensure generated package name is configurable (e.g. `--pkg=gohtmlxc` or from path).
-- [ ] Preserve deterministic ordering (e.g. sort files and contents) so diffs are stable.
+- [x] Shared pieces: one small file for shared types/imports (or embed in first file), or a `gohtmlx_runtime.go` that stays minimal.
+- [x] Ensure generated package name is configurable (e.g. `--pkg=gohtmlxc` or from path).
+- [x] Preserve deterministic ordering (e.g. sort files and contents) so diffs are stable.
 
 **Acceptance:** With 50+ components, output is multiple files; `go build` still works; order is deterministic.
 

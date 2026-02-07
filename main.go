@@ -24,6 +24,8 @@ func main() {
 
 	src := flag.String("src", "", "source directory containing .html components")
 	dist := flag.String("dist", "", "destination directory for generated Go code")
+	singleFile := flag.Bool("single-file", false, "emit one comp_generated.go (legacy); default is one file per component")
+	pkg := flag.String("pkg", "gohtmlxc", "generated package name")
 	flag.Parse()
 
 	if *src == "" || *dist == "" {
@@ -32,7 +34,8 @@ func main() {
 	}
 
 	utils.Log = utils.NewSlogLogger(slog.Default())
-	if err := transpiler.Run(*src, *dist); err != nil {
+	opts := &transpiler.RunOptions{SingleFile: *singleFile, Pkg: *pkg}
+	if err := transpiler.Run(*src, *dist, opts); err != nil {
 		utils.Log.Error("transpiling failed", "err", err)
 		os.Exit(1)
 	}

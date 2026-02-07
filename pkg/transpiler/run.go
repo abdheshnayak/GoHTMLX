@@ -17,9 +17,81 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+// RunOptions configures Run. Nil means default: one file per component, package "gohtmlxc".
+type RunOptions struct {
+	// SingleFile emits one comp_generated.go instead of one file per component (legacy behavior).
+	SingleFile bool
+	// Pkg is the generated package name (default "gohtmlxc").
+	Pkg string
+}
+
+func defaultOptions(opts *RunOptions) RunOptions {
+	if opts == nil {
+		return RunOptions{Pkg: "gohtmlxc"}
+	}
+	if opts.Pkg == "" {
+		opts.Pkg = "gohtmlxc"
+	}
+	return *opts
+}
+
+// importsUsedInComponent returns only imports whose package alias appears in structStr or codeStr (e.g. "t.").
+// Avoids "imported and not used" in per-component files.
+func importsUsedInComponent(imports []string, structStr string, codeStr string) []string {
+	var out []string
+	for _, imp := range imports {
+		alias := importAlias(imp)
+		if alias == "" {
+			out = append(out, imp)
+			continue
+		}
+		needle := alias + "."
+		if strings.Contains(structStr, needle) || strings.Contains(codeStr, needle) {
+			out = append(out, imp)
+		}
+	}
+	return out
+}
+
+func importAlias(imp string) string {
+	imp = strings.TrimSpace(imp)
+	// Format: alias "path" or "path"
+	parts := strings.Fields(imp)
+	if len(parts) >= 2 && !strings.HasPrefix(parts[0], `"`) {
+		return parts[0]
+	}
+	if len(parts) >= 1 && strings.HasPrefix(parts[0], `"`) {
+		path := strings.Trim(parts[0], `"`)
+		if i := strings.LastIndex(path, "/"); i >= 0 {
+			return path[i+1:]
+		}
+		return path
+	}
+	return ""
+}
+
+// componentFileName returns a safe filename for the component (e.g. "SampleTable" -> "SampleTable.go").
+func componentFileName(name string) string {
+	var b strings.Builder
+	for _, r := range name {
+		if (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_' {
+			b.WriteRune(r)
+		} else if r == ' ' || r == '-' {
+			b.WriteRune('_')
+		}
+	}
+	s := b.String()
+	if s == "" {
+		s = "component"
+	}
+	return s + ".go"
+}
+
 // Run transpiles HTML components from src to Go code in dist.
 // It uses utils.Log for progress when set (default is no-op).
-func Run(src, dist string) error {
+// If opts is nil, one file per component is emitted with package "gohtmlxc".
+func Run(src, dist string, opts *RunOptions) error {
+	opt := defaultOptions(opts)
 	if utils.Log != nil {
 		utils.Log.Info("transpiling...")
 	}
@@ -94,6 +166,7 @@ func Run(src, dist string) error {
 	sort.Strings(sectionNames)
 
 	structs := []string{}
+	structMap := make(map[string]string)
 
 	for _, name := range sectionNames {
 		content := sections[name]
@@ -119,9 +192,13 @@ func Run(src, dist string) error {
 				}
 			}
 
-			structs = append(structs, gocode.ConstructStruct(propsMap, name))
+			s := gocode.ConstructStruct(propsMap, name)
+			structs = append(structs, s)
+			structMap[name] = s
 		} else {
-			structs = append(structs, gocode.ConstructStruct(map[string]string{}, name))
+			s := gocode.ConstructStruct(map[string]string{}, name)
+			structs = append(structs, s)
+			structMap[name] = s
 		}
 	}
 
@@ -154,17 +231,44 @@ func Run(src, dist string) error {
 		}
 	}
 
-	b, err := gocode.ConstructSource(goCodes, structs, imports)
-	if err != nil {
+	outDir := path.Join(dist, opt.Pkg)
+	if err := os.MkdirAll(outDir, 0755); err != nil {
 		return err
+	}
+	// Remove existing .go files so we never mix single-file and multi-file output
+	matches, _ := filepath.Glob(filepath.Join(outDir, "*.go"))
+	for _, m := range matches {
+		_ = os.Remove(m)
 	}
 
-	outPath := path.Join(dist, "gohtmlxc", "comp_generated.go")
-	if err := os.MkdirAll(filepath.Dir(outPath), 0755); err != nil {
-		return err
+	if opt.SingleFile {
+		b, err := gocode.ConstructSourceWithPkg(goCodes, structs, imports, opt.Pkg)
+		if err != nil {
+			return err
+		}
+		outPath := path.Join(outDir, "comp_generated.go")
+		if err := os.WriteFile(outPath, []byte(b), 0644); err != nil {
+			return err
+		}
+		return nil
 	}
-	if err := os.WriteFile(outPath, []byte(b), 0644); err != nil {
-		return err
+
+	// One file per component; each file gets package + only the imports it uses (so no "imported and not used")
+	for _, name := range sectionNames {
+		codeStr, ok := goCodes[name]
+		if !ok {
+			continue
+		}
+		structStr := structMap[name]
+		usedImports := importsUsedInComponent(imports, structStr, codeStr)
+		compContent, err := gocode.ConstructComponentFile(opt.Pkg, usedImports, name, structStr, codeStr)
+		if err != nil {
+			return err
+		}
+		filename := componentFileName(name)
+		if err := os.WriteFile(path.Join(outDir, filename), []byte(compContent), 0644); err != nil {
+			return err
+		}
 	}
 
 	return nil

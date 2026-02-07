@@ -26,10 +26,11 @@ func TestRun_DeterministicOutput(t *testing.T) {
 	dist2 := t.TempDir()
 
 	utils.Log = utils.NewSlogLogger(slog.Default())
-	if err := transpiler.Run(src, dist1); err != nil {
+	opts := &transpiler.RunOptions{SingleFile: true}
+	if err := transpiler.Run(src, dist1, opts); err != nil {
 		t.Fatalf("first Run: %v", err)
 	}
-	if err := transpiler.Run(src, dist2); err != nil {
+	if err := transpiler.Run(src, dist2, opts); err != nil {
 		t.Fatalf("second Run: %v", err)
 	}
 
@@ -72,7 +73,7 @@ func TestRun_SourceTrackingError(t *testing.T) {
 	}
 	utils.Log = utils.NewSlogLogger(slog.Default())
 	dist := t.TempDir()
-	err := transpiler.Run(src, dist)
+	err := transpiler.Run(src, dist, &transpiler.RunOptions{SingleFile: true})
 	if err == nil {
 		t.Fatal("expected error from invalid props YAML")
 	}
@@ -103,7 +104,7 @@ func TestRun_Golden(t *testing.T) {
 
 	utils.Log = utils.NewSlogLogger(slog.Default())
 	dist := t.TempDir()
-	if err := transpiler.Run(src, dist); err != nil {
+	if err := transpiler.Run(src, dist, &transpiler.RunOptions{SingleFile: true}); err != nil {
 		t.Fatalf("Run: %v", err)
 	}
 	gotPath := filepath.Join(dist, "gohtmlxc", "comp_generated.go")
@@ -163,7 +164,7 @@ func TestRun_IntegrationBuild(t *testing.T) {
 	_ = os.RemoveAll(dist)
 	defer os.RemoveAll(dist)
 	utils.Log = utils.NewSlogLogger(slog.Default())
-	if err := transpiler.Run(src, dist); err != nil {
+	if err := transpiler.Run(src, dist, &transpiler.RunOptions{SingleFile: true}); err != nil {
 		t.Fatalf("Run: %v", err)
 	}
 	relPkg, _ := filepath.Rel(root, filepath.Join(dist, "gohtmlxc"))

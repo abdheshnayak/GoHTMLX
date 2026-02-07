@@ -132,8 +132,10 @@ This command will transpile HTML components from the `src` directory and generat
 
 ### Options
 
-- `--src`: Specifies the directory containing the source files to be transpiled.
-- `--dist`: Specifies the directory where the transpiled Go code will be generated.
+- `--src`: Directory containing the source `.html` component files.
+- `--dist`: Directory where generated Go code is written (e.g. `dist/gohtmlxc/`).
+- `--single-file`: Emit one `comp_generated.go` (legacy). Default is one file per component plus `imports.go`.
+- `--pkg`: Generated package name (default `gohtmlxc`).
 
 ### Exit codes
 
