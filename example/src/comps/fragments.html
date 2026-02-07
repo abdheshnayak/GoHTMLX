@@ -1,0 +1,27 @@
+<!-- ServerTime: fragment for HTMX — display server time (no layout) -->
+<!-- + define "ServerTime" -->
+<!-- | define "props" -->
+time: string
+label: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl inline-block">
+  <span class="text-sm text-gray-500 dark:text-zinc-400">{props.Label}</span>
+  <p class="m-0 mt-1 text-lg font-mono text-indigo-600 dark:text-indigo-400">{props.Time}</p>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- StatsFragment: fragment for HTMX — stats row only (same as in Home) -->
+<!-- + define "StatsFragment" -->
+<!-- | define "props" -->
+stats: "[]t.Stat"
+<!-- | end -->
+<!-- | define "html" -->
+<div class="flex gap-4 flex-wrap">
+  <for items={props.Stats} as="s">
+    <StatCard value={s.Value} label={s.Label}></StatCard>
+  </for>
+</div>
+<!-- | end -->
+<!-- + end -->

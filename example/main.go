@@ -24,6 +24,20 @@ func main() {
 		CacheDuration: time.Microsecond,
 	})
 
+	// HTMX fragment endpoints — return GoHTMLX-generated HTML for partial updates
+	app.Get("/api/time", func(c *fiber.Ctx) error {
+		el := comps.ServerTime(time.Now().Format("2006-01-02 15:04:05 MST"), "Server time")
+		c.Set("Content-Type", "text/html")
+		_, err := el.Render(c)
+		return err
+	})
+	app.Get("/api/stats", func(c *fiber.Ctx) error {
+		el := comps.StatsFragment()
+		c.Set("Content-Type", "text/html")
+		_, err := el.Render(c)
+		return err
+	})
+
 	// Route to handle dynamic exports
 	app.Get("/", func(c *fiber.Ctx) error {
 		response, err := invokeExport("home")

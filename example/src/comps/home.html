@@ -33,6 +33,7 @@ alertMessage: string
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
     <PageStyle></PageStyle>
+    <script src="https://unpkg.com/htmx.org@2.0.4" crossorigin></script>
   </head>
   <body class="min-h-screen flex flex-col bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-50">
     <header class="shrink-0 bg-gray-50 dark:bg-zinc-950">
@@ -46,6 +47,23 @@ alertMessage: string
         <if condition={props.ShowAlert}>
           <Alert message={props.AlertMessage}></Alert>
         </if>
+        <section id="htmx-demo" class="mb-14 last:mb-0 p-5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl">
+          <h2 class="text-[1.375rem] font-semibold mt-0 mb-2 tracking-tight text-gray-900 dark:text-zinc-50">Dynamic with HTMX</h2>
+          <p class="text-gray-600 dark:text-zinc-400 text-sm mb-4">Partial updates without a full page reload. Buttons fetch HTML fragments from the server (GoHTMLX-generated) and swap them in.</p>
+          <div class="flex flex-wrap gap-4 items-end">
+            <div>
+              <button type="button" class="px-4 py-2 rounded-lg bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400 transition-colors" hx-get="/api/time" hx-swap="innerHTML" hx-target="#time-result" hx-trigger="click">
+                Get server time
+              </button>
+              <div id="time-result" class="mt-2 min-h-[2rem] text-sm text-gray-500 dark:text-zinc-400">Click the button to load.</div>
+            </div>
+            <div>
+              <button type="button" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 text-gray-700 dark:text-zinc-300 text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" hx-get="/api/stats" hx-swap="innerHTML" hx-target="#stats-content" hx-trigger="click">
+                Refresh stats
+              </button>
+            </div>
+          </div>
+        </section>
         <section id="features" class="mb-14 last:mb-0">
           <h2 class="text-[1.375rem] font-semibold mt-0 mb-4 tracking-tight text-gray-900 dark:text-zinc-50">Features</h2>
           <p class="text-gray-600 dark:text-zinc-400 text-[0.9375rem] mb-6">Each feature includes a short example. Code is from the GoHTMLX template syntax or CLI.</p>
@@ -57,7 +75,7 @@ alertMessage: string
         </section>
         <section id="stats" class="mb-14 last:mb-0">
           <h2 class="text-[1.375rem] font-semibold mt-0 mb-4 tracking-tight text-gray-900 dark:text-zinc-50">By the numbers</h2>
-          <div class="flex gap-4 flex-wrap mb-8">
+          <div id="stats-content" class="flex gap-4 flex-wrap mb-8">
             <for items={props.Stats} as="s">
               <StatCard value={s.Value} label={s.Label}></StatCard>
             </for>

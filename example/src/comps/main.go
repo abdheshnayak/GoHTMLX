@@ -81,3 +81,21 @@ func Home() element.Element {
 		Attrs:             element.Attrs{},
 	}.Get()
 }
+
+// ServerTime returns a fragment for HTMX (e.g. GET /api/time). Pass the time string and optional label.
+func ServerTime(timeStr, label string) element.Element {
+	if label == "" {
+		label = "Server time"
+	}
+	return gc.ServerTime{Time: timeStr, Label: label, Attrs: nil}.Get()
+}
+
+// StatsFragment returns the stats row as a fragment for HTMX (e.g. GET /api/stats).
+func StatsFragment() element.Element {
+	stats := []t.Stat{
+		{Value: "0", Label: "JS runtime"},
+		{Value: "1", Label: "CLI command"},
+		{Value: "100%", Label: "Go"},
+	}
+	return gc.StatsFragment{Stats: stats, Attrs: nil}.Get()
+}
