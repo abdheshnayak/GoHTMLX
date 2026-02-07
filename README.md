@@ -26,7 +26,7 @@ task dev
 ### or run the example with Docker
 
 ```bash
-docker run --rm -p 3000:3000 ghcr.io/abdheshnayak/htmlx:example
+docker run --rm -p 3000:3000 ghcr.io/abdheshnayak/gohtmlx:example
 ```
 
 Then open [http://localhost:3000](http://localhost:3000) in your browser.
