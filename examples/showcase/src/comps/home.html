@@ -1,0 +1,132 @@
+<!-- Global imports: merged from all .html files; custom types for props -->
+<!-- * define "imports" -->
+t "github.com/abdheshnayak/gohtmlx/examples/showcase/src/types"
+<!-- * end -->
+
+<!-- Home: page component — hero, features (with code examples), footer -->
+<!-- + define "Home" -->
+<!-- | define "props" -->
+navLinks: "[]t.NavLink"
+features: "[]t.Feature"
+showHero: bool
+heroTitle: string
+heroSubtitle: string
+heroBadge: string
+showHeroBadge: bool
+showCtaPrimary: bool
+ctaPrimaryText: string
+ctaPrimaryHref: string
+showCtaSecondary: bool
+ctaSecondaryText: string
+ctaSecondaryHref: string
+showAlert: bool
+alertMessage: string
+<!-- | end -->
+<!-- | define "html" -->
+<html lang="en" class="bg-gray-50 dark:bg-zinc-950">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoHTMLX — HTML-first server components for Go</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+    <PageStyle></PageStyle>
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@2.0.4" crossorigin></script>
+  </head>
+  <body class="min-h-screen flex flex-col bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-50">
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header class="shrink-0 bg-gray-50 dark:bg-zinc-950">
+      <AppHeader links={props.NavLinks}></AppHeader>
+    </header>
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-10 max-w-[1100px] w-full mx-auto px-6 py-8 bg-gray-50 dark:bg-zinc-950">
+      <main id="main" class="min-w-0" tabindex="-1">
+        <if condition={props.ShowHero}>
+          <Hero title={props.HeroTitle} subtitle={props.HeroSubtitle} badge={props.HeroBadge} showBadge={props.ShowHeroBadge} showCtaPrimary={props.ShowCtaPrimary} ctaPrimaryText={props.CtaPrimaryText} ctaPrimaryHref={props.CtaPrimaryHref} showCtaSecondary={props.ShowCtaSecondary} ctaSecondaryText={props.CtaSecondaryText} ctaSecondaryHref={props.CtaSecondaryHref}></Hero>
+        </if>
+        <if condition={props.ShowAlert}>
+          <Alert message={props.AlertMessage}></Alert>
+        </if>
+        <section id="htmx-demo" class="mb-14 last:mb-0 p-5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl">
+          <h2 class="text-[1.375rem] font-semibold mt-0 mb-2 tracking-tight text-gray-900 dark:text-zinc-50">Dynamic with HTMX</h2>
+          <p class="text-gray-600 dark:text-zinc-400 text-sm mb-4">Partial updates without a full page reload. The button fetches an HTML fragment from the server (GoHTMLX-generated) and swaps it in below.</p>
+          <div class="flex items-center gap-2">
+            <button type="button" class="px-4 py-2 rounded-lg bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400 transition-colors disabled:opacity-70" hx-get="/api/time" hx-swap="innerHTML" hx-target="#time-result" hx-trigger="click" hx-indicator="#time-loading">
+              Get server time
+            </button>
+            <span id="time-loading" class="htmx-indicator inline-flex items-center gap-1 text-sm text-gray-500 dark:text-zinc-400" aria-hidden="true">
+              <span class="inline-block w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
+              Loading…
+            </span>
+            <div id="time-result" class="mt-2 min-h-[2rem] text-sm text-gray-500 dark:text-zinc-400">Click the button to load.</div>
+          </div>
+        </section>
+        <section id="feedback" class="mb-14 last:mb-0 p-5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl">
+          <h2 class="text-[1.375rem] font-semibold mt-0 mb-2 tracking-tight text-gray-900 dark:text-zinc-50">Submit with HTMX</h2>
+          <p class="text-gray-600 dark:text-zinc-400 text-sm mb-4">Submit the form without a full page reload. The server validates and returns a GoHTMLX fragment.</p>
+          <form class="flex flex-col gap-3 max-w-md" hx-post="/api/feedback" hx-target="#form-result" hx-swap="innerHTML" hx-indicator="#form-loading">
+            <div>
+              <label for="fb-name" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Name</label>
+              <input id="fb-name" name="name" type="text" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-50 text-sm" placeholder="Your name" required>
+            </div>
+            <div>
+              <label for="fb-msg" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Message</label>
+              <textarea id="fb-msg" name="message" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-50 text-sm resize-y" placeholder="Your message" required></textarea>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400 transition-colors">Send feedback</button>
+              <span id="form-loading" class="htmx-indicator inline-flex items-center gap-1 text-sm text-gray-500 dark:text-zinc-400">
+                <span class="inline-block w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
+                Sending…
+              </span>
+            </div>
+            <div id="form-result"></div>
+          </form>
+        </section>
+        <section id="features" class="mb-14 last:mb-0">
+          <h2 class="text-[1.375rem] font-semibold mt-0 mb-4 tracking-tight text-gray-900 dark:text-zinc-50">Features</h2>
+          <p class="text-gray-600 dark:text-zinc-400 text-[0.9375rem] mb-6">Each feature includes a short example. Code is from the GoHTMLX template syntax or CLI.</p>
+          <div class="flex flex-col gap-6">
+            <for items={props.Features} as="f">
+              <FeatureCard title={f.Title} description={f.Description} icon={f.Icon} code={f.Code} showCode={f.ShowCode} language={f.Language}></FeatureCard>
+            </for>
+          </div>
+        </section>
+      </main>
+      <aside>
+        <Sidebar></Sidebar>
+      </aside>
+    </div>
+    <footer class="mt-auto py-8 px-6 border-t border-gray-200 dark:border-zinc-800 text-center text-gray-500 dark:text-zinc-500 text-sm bg-gray-50 dark:bg-zinc-950">
+      <AppFooter></AppFooter>
+    </footer>
+    <AppScript></AppScript>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script>
+      (function () {
+        var urls = [
+          'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js',
+          'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-go.min.js',
+          'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js'
+        ];
+        var i = 0;
+        function loadNext() {
+          if (i >= urls.length) {
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+            else run();
+            return;
+          }
+          var s = document.createElement('script');
+          s.src = urls[i++];
+          s.onload = loadNext;
+          document.head.appendChild(s);
+        }
+        function run() { Prism.highlightAll(); }
+        loadNext();
+      })();
+    </script>
+  </body>
+</html>
+<!-- | end -->
+<!-- + end -->

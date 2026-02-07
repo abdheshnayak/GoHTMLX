@@ -4,11 +4,31 @@ import (
 	"log/slog"
 	"strings"
 	"text/template"
-	"time"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/nxtcoder17/fwatcher/pkg/logging"
 )
+
+// Logger is used for progress and errors. Default is no-op; set Log to inject (e.g. from CLI or integration).
+type Logger interface {
+	Info(msg string, kvs ...any)
+	Error(msg string, kvs ...any)
+}
+
+type noopLogger struct{}
+
+func (noopLogger) Info(msg string, kvs ...any)  {}
+func (noopLogger) Error(msg string, kvs ...any) {}
+
+// Log is the global logger. Default is no-op; set to a real logger (e.g. utils.NewSlogLogger(slog.Default())) from main or example.
+var Log Logger = noopLogger{}
+
+// NewSlogLogger returns a Logger that forwards to the given slog.Logger.
+func NewSlogLogger(l *slog.Logger) Logger {
+	return &slogLogger{l: l}
+}
+
+type slogLogger struct{ l *slog.Logger }
+
+func (s *slogLogger) Info(msg string, kvs ...any)  { s.l.Info(msg, kvs...) }
+func (s *slogLogger) Error(msg string, kvs ...any) { s.l.Error(msg, kvs...) }
 
 func Capitalize(s string) string {
 	if len(s) == 0 {
@@ -47,27 +67,4 @@ func ParseSections(tmpl *template.Template) (map[string]string, error) {
 	}
 
 	return sections, nil
-}
-
-var Log = logging.NewSlogLogger(logging.SlogOptions{
-	ShowTimestamp: true,
-	ShowCaller:    false,
-})
-
-func FiberLogger(c *fiber.Ctx) error {
-	start := time.Now()
-
-	// Process request
-	err := c.Next()
-
-	// Log the request details
-	Log.Info("HTTP request",
-		slog.String("method", c.Method()),
-		slog.String("path", c.Path()),
-		slog.Int("status", c.Response().StatusCode()),
-		slog.Duration("latency", time.Since(start)),
-		slog.String("ip", c.IP()),
-	)
-
-	return err
 }

@@ -1,0 +1,52 @@
+<!-- FeatureCard: feature title, description, optional code snippet with syntax highlighting -->
+<!-- + define "FeatureCard" -->
+<!-- | define "props" -->
+title: string
+description: string
+icon: string
+code: string
+showCode: bool
+language: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="p-5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl transition-colors hover:border-gray-300 dark:hover:border-zinc-700 hover:shadow-sm">
+  <h3 class="mt-0 mb-1.5 text-base font-semibold text-gray-900 dark:text-zinc-50">{props.Title}</h3>
+  <p class="m-0 mb-4 text-gray-500 dark:text-zinc-500 text-sm leading-snug">{props.Description}</p>
+  <if condition={props.ShowCode}>
+    <div class="code-block-wrap relative">
+      <pre class="m-0 p-4 pr-12 bg-gray-100 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg overflow-x-auto text-xs"><code class="font-mono text-gray-600 dark:text-zinc-400 whitespace-pre {props.Language}">{props.Code}</code></pre>
+      <button type="button" class="absolute top-2 right-2 px-2 py-1 rounded text-xs font-medium bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-zinc-300 hover:bg-gray-300 dark:hover:bg-zinc-600 transition-colors" onclick="copyCode(this)">Copy</button>
+    </div>
+  </if>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- StatCard: value + label (e.g. for stats row) -->
+<!-- + define "StatCard" -->
+<!-- | define "props" -->
+value: string
+label: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="flex-1 min-w-[120px] p-5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl text-center">
+  <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{props.Value}</div>
+  <div class="text-xs text-gray-500 dark:text-zinc-500 mt-1">{props.Label}</div>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- TestimonialCard: quote + author — {props.Role} (multiple expressions in one text) -->
+<!-- + define "TestimonialCard" -->
+<!-- | define "props" -->
+quote: string
+author: string
+role: string
+<!-- | end -->
+<!-- | define "html" -->
+<blockquote class="p-5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl italic text-gray-600 dark:text-zinc-400 text-[0.9375rem]">
+  <p class="m-0">{props.Quote}</p>
+  <footer class="not-italic text-gray-900 dark:text-zinc-50 mt-2 text-sm">{props.Author} — {props.Role}</footer>
+</blockquote>
+<!-- | end -->
+<!-- + end -->

@@ -1,0 +1,10 @@
+<!-- SlotLayout: demonstrates slots — header, body, footer placeholders -->
+<!-- + define "SlotLayout" -->
+<!-- | define "html" -->
+<div class="border border-dashed border-gray-300 dark:border-zinc-700 rounded-lg overflow-hidden mt-3">
+  <header class="py-3 px-4 bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-semibold text-sm"><slot name="header"/></header>
+  <main class="p-4 text-gray-900 dark:text-zinc-50 text-[0.9375rem]"><slot name="body"/></main>
+  <footer class="py-2 px-4 bg-gray-100 dark:bg-zinc-900 text-gray-500 dark:text-zinc-500 text-xs"><slot name="footer"/></footer>
+</div>
+<!-- | end -->
+<!-- + end -->

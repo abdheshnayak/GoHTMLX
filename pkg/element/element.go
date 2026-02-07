@@ -1,3 +1,7 @@
+// Package element provides the runtime types and rendering used by GoHTMLX-generated code.
+// Generated components produce Element values (via E, R, and component constructors) and
+// call Render(w) to write HTML. Use this package only from generated code or when
+// implementing custom elements; the transpiler lives in pkg/transpiler.
 package element
 
 import (
@@ -12,8 +16,11 @@ const (
 	nbspChar = " "
 )
 
+// Attrs holds attribute key-value pairs for an element (e.g. class, id).
+// Used by generated code and by E(tag, attrs, children...).
 type Attrs map[string]any
 
+// GetAttr returns a typed attribute value from attrs, or nil if missing or wrong type.
 func GetAttr[T any](attrs Attrs, key string) *T {
 	if val, ok := attrs[key]; ok {
 		resp, ok := val.(T)
@@ -28,15 +35,12 @@ func GetAttr[T any](attrs Attrs, key string) *T {
 	return nil
 }
 
+// Event is a placeholder type for future event handling.
 type Event any
 
+// Element is the interface produced by generated components. Render writes HTML to w.
 type Element interface {
 	Render(io.Writer) (int, error)
-}
-
-type forElement[T any] struct {
-	items    []T
-	children Element
 }
 
 type element struct {
@@ -54,36 +58,36 @@ func (t renderElement) Render(w io.Writer) (int, error) {
 	var buffer strings.Builder
 
 	for _, item := range t.items {
-		switch item.(type) {
+		switch item := item.(type) {
 		case int:
-			buffer.WriteString(fmt.Sprintf("%d", item.(int)))
+			buffer.WriteString(fmt.Sprintf("%d", item))
 		case float64:
-			buffer.WriteString(fmt.Sprintf("%f", item.(float64)))
+			buffer.WriteString(fmt.Sprintf("%f", item))
 		case bool:
-			buffer.WriteString(fmt.Sprintf("%t", item.(bool)))
+			buffer.WriteString(fmt.Sprintf("%t", item))
 		case *string:
-			buffer.WriteString(fmt.Sprintf("%s", *item.(*string)))
+			buffer.WriteString(*item)
 		case *int:
-			buffer.WriteString(fmt.Sprintf("%d", *item.(*int)))
+			buffer.WriteString(fmt.Sprintf("%d", *item))
 		case *float64:
-			buffer.WriteString(fmt.Sprintf("%f", *item.(*float64)))
+			buffer.WriteString(fmt.Sprintf("%f", *item))
 		case *bool:
-			buffer.WriteString(fmt.Sprintf("%t", *item.(*bool)))
+			buffer.WriteString(fmt.Sprintf("%t", *item))
 		case *Element:
-			(*item.(*Element)).Render(&buffer)
+			_, _ = (*item).Render(&buffer)
 		case *[]Element:
-			for _, child := range *item.(*[]Element) {
-				child.Render(&buffer)
+			for _, child := range *item {
+				_, _ = child.Render(&buffer)
 			}
 		case string:
-			buffer.WriteString(strings.ReplaceAll(item.(string), nbspChar, "&nbsp;"))
+			buffer.WriteString(strings.ReplaceAll(item, nbspChar, "&nbsp;"))
 			// buffer.WriteString(item.(string))
 
 		case Element:
-			item.(Element).Render(&buffer)
+			_, _ = item.Render(&buffer)
 		case []Element:
-			for _, child := range item.([]Element) {
-				child.Render(&buffer)
+			for _, child := range item {
+				_, _ = child.Render(&buffer)
 			}
 		default:
 			utils.Log.Error("error", "for", fmt.Sprintf("%v", item))
@@ -94,18 +98,14 @@ func (t renderElement) Render(w io.Writer) (int, error) {
 	return w.Write([]byte(buffer.String()))
 }
 
+// R builds an Element from a mix of strings, Elements, and slices of Elements (used by generated code).
 func R(items ...interface{}) Element {
 	return renderElement{
 		items: items,
 	}
 }
 
-type renderComp struct {
-	name      string
-	props     interface{}
-	childrens []Element
-}
-
+// E builds an HTML element with the given tag, attrs, and children (used by generated code).
 func E(tag string, attrs Attrs, childrens ...Element) Element {
 	return element{
 		tag:       tag,
@@ -133,16 +133,16 @@ func (e element) Render(w io.Writer) (int, error) {
 		buffer.WriteString(k)
 		buffer.WriteString("=\"")
 
-		switch v.(type) {
+		switch v := v.(type) {
 		case string:
-			buffer.WriteString(v.(string))
+			buffer.WriteString(v)
 		case *string:
-			buffer.WriteString(fmt.Sprintf("%s", *v.(*string)))
+			buffer.WriteString(*v)
 		case Element:
-			v.(Element).Render(&buffer)
+			_, _ = v.Render(&buffer)
 		case []Element:
-			for _, child := range v.([]Element) {
-				child.Render(&buffer)
+			for _, child := range v {
+				_, _ = child.Render(&buffer)
 			}
 		default:
 			utils.Log.Error("unknown type", "for", fmt.Sprintf("%v", v))
@@ -154,7 +154,7 @@ func (e element) Render(w io.Writer) (int, error) {
 
 	buffer.WriteString(">")
 	for _, child := range e.childrens {
-		child.Render(&buffer)
+		_, _ = child.Render(&buffer)
 	}
 	buffer.WriteString("</")
 	buffer.WriteString(e.tag)

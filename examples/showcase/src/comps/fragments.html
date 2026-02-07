@@ -1,0 +1,37 @@
+<!-- ServerTime: fragment for HTMX — display server time (no layout) -->
+<!-- + define "ServerTime" -->
+<!-- | define "props" -->
+time: string
+label: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl inline-block">
+  <span class="text-sm text-gray-500 dark:text-zinc-400">{props.Label}</span>
+  <p class="m-0 mt-1 text-lg font-mono text-indigo-600 dark:text-indigo-400">{props.Time}</p>
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- FeedbackSuccess: fragment after successful form submit -->
+<!-- + define "FeedbackSuccess" -->
+<!-- | define "props" -->
+message: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="p-4 rounded-lg bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200 text-sm" role="status">
+  {props.Message}
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- FeedbackErrors: fragment when form validation fails -->
+<!-- + define "FeedbackErrors" -->
+<!-- | define "props" -->
+message: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-sm" role="alert">
+  {props.Message}
+</div>
+<!-- | end -->
+<!-- + end -->

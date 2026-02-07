@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+/* Base: no @apply (Tailwind v4 can fail on @apply in this file). Use plain CSS. */
+@layer base {
+  html {
+    background-color: #f9fafb;
+  }
+  @media (prefers-color-scheme: dark) {
+    html {
+      background-color: #09090b;
+    }
+  }
+  body {
+    min-height: 100vh;
+    font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.625;
+    color: #111827;
+  }
+  @media (prefers-color-scheme: dark) {
+    body {
+      color: #fafafa;
+    }
+  }
+}
+
+@layer components {
+  .nav-cta a {
+    color: #4f46e5;
+    font-weight: 600;
+  }
+  .nav-cta a:hover {
+    color: #4338ca;
+    background-color: rgb(99 102 241 / 0.1);
+  }
+  @media (prefers-color-scheme: dark) {
+    .nav-cta a {
+      color: #818cf8;
+    }
+    .nav-cta a:hover {
+      color: #a5b4fc;
+      background-color: rgb(99 102 241 / 0.15);
+    }
+  }
+
+  /* HTMX: show indicator while request is in progress */
+  .htmx-indicator {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .htmx-indicator.htmx-request {
+    opacity: 1;
+  }
+
+  /* Skip link: visible on focus for accessibility */
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 8px;
+    z-index: 100;
+    padding: 8px 12px;
+    background: #4f46e5;
+    color: white;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: top 0.2s ease;
+  }
+  .skip-link:focus {
+    top: 8px;
+    outline: 2px solid #818cf8;
+    outline-offset: 2px;
+  }
+}
