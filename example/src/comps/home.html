@@ -3,12 +3,11 @@
 t "github.com/abdheshnayak/gohtmlx/example/src/types"
 <!-- * end -->
 
-<!-- Home: page component — hero, features (with code examples), stats, footer -->
+<!-- Home: page component — hero, features (with code examples), footer -->
 <!-- + define "Home" -->
 <!-- | define "props" -->
 navLinks: "[]t.NavLink"
 features: "[]t.Feature"
-stats: "[]t.Stat"
 showHero: bool
 heroTitle: string
 heroSubtitle: string
@@ -36,11 +35,12 @@ alertMessage: string
     <script src="https://unpkg.com/htmx.org@2.0.4" crossorigin></script>
   </head>
   <body class="min-h-screen flex flex-col bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-50">
+    <a href="#main" class="skip-link">Skip to main content</a>
     <header class="shrink-0 bg-gray-50 dark:bg-zinc-950">
       <AppHeader links={props.NavLinks}></AppHeader>
     </header>
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-10 max-w-[1100px] w-full mx-auto px-6 py-8 bg-gray-50 dark:bg-zinc-950">
-      <main class="min-w-0">
+      <main id="main" class="min-w-0" tabindex="-1">
         <if condition={props.ShowHero}>
           <Hero title={props.HeroTitle} subtitle={props.HeroSubtitle} badge={props.HeroBadge} showBadge={props.ShowHeroBadge} showCtaPrimary={props.ShowCtaPrimary} ctaPrimaryText={props.CtaPrimaryText} ctaPrimaryHref={props.CtaPrimaryHref} showCtaSecondary={props.ShowCtaSecondary} ctaSecondaryText={props.CtaSecondaryText} ctaSecondaryHref={props.CtaSecondaryHref}></Hero>
         </if>
@@ -49,20 +49,39 @@ alertMessage: string
         </if>
         <section id="htmx-demo" class="mb-14 last:mb-0 p-5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl">
           <h2 class="text-[1.375rem] font-semibold mt-0 mb-2 tracking-tight text-gray-900 dark:text-zinc-50">Dynamic with HTMX</h2>
-          <p class="text-gray-600 dark:text-zinc-400 text-sm mb-4">Partial updates without a full page reload. Buttons fetch HTML fragments from the server (GoHTMLX-generated) and swap them in.</p>
-          <div class="flex flex-wrap gap-4 items-end">
-            <div>
-              <button type="button" class="px-4 py-2 rounded-lg bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400 transition-colors" hx-get="/api/time" hx-swap="innerHTML" hx-target="#time-result" hx-trigger="click">
-                Get server time
-              </button>
-              <div id="time-result" class="mt-2 min-h-[2rem] text-sm text-gray-500 dark:text-zinc-400">Click the button to load.</div>
-            </div>
-            <div>
-              <button type="button" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 text-gray-700 dark:text-zinc-300 text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors" hx-get="/api/stats" hx-swap="innerHTML" hx-target="#stats-content" hx-trigger="click">
-                Refresh stats
-              </button>
-            </div>
+          <p class="text-gray-600 dark:text-zinc-400 text-sm mb-4">Partial updates without a full page reload. The button fetches an HTML fragment from the server (GoHTMLX-generated) and swaps it in below.</p>
+          <div class="flex items-center gap-2">
+            <button type="button" class="px-4 py-2 rounded-lg bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400 transition-colors disabled:opacity-70" hx-get="/api/time" hx-swap="innerHTML" hx-target="#time-result" hx-trigger="click" hx-indicator="#time-loading">
+              Get server time
+            </button>
+            <span id="time-loading" class="htmx-indicator inline-flex items-center gap-1 text-sm text-gray-500 dark:text-zinc-400" aria-hidden="true">
+              <span class="inline-block w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
+              Loading…
+            </span>
+            <div id="time-result" class="mt-2 min-h-[2rem] text-sm text-gray-500 dark:text-zinc-400">Click the button to load.</div>
           </div>
+        </section>
+        <section id="feedback" class="mb-14 last:mb-0 p-5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl">
+          <h2 class="text-[1.375rem] font-semibold mt-0 mb-2 tracking-tight text-gray-900 dark:text-zinc-50">Submit with HTMX</h2>
+          <p class="text-gray-600 dark:text-zinc-400 text-sm mb-4">Submit the form without a full page reload. The server validates and returns a GoHTMLX fragment.</p>
+          <form class="flex flex-col gap-3 max-w-md" hx-post="/api/feedback" hx-target="#form-result" hx-swap="innerHTML" hx-indicator="#form-loading">
+            <div>
+              <label for="fb-name" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Name</label>
+              <input id="fb-name" name="name" type="text" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-50 text-sm" placeholder="Your name" required>
+            </div>
+            <div>
+              <label for="fb-msg" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Message</label>
+              <textarea id="fb-msg" name="message" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-50 text-sm resize-y" placeholder="Your message" required></textarea>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400 transition-colors">Send feedback</button>
+              <span id="form-loading" class="htmx-indicator inline-flex items-center gap-1 text-sm text-gray-500 dark:text-zinc-400">
+                <span class="inline-block w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
+                Sending…
+              </span>
+            </div>
+            <div id="form-result"></div>
+          </form>
         </section>
         <section id="features" class="mb-14 last:mb-0">
           <h2 class="text-[1.375rem] font-semibold mt-0 mb-4 tracking-tight text-gray-900 dark:text-zinc-50">Features</h2>
@@ -70,14 +89,6 @@ alertMessage: string
           <div class="flex flex-col gap-6">
             <for items={props.Features} as="f">
               <FeatureCard title={f.Title} description={f.Description} icon={f.Icon} code={f.Code} showCode={f.ShowCode}></FeatureCard>
-            </for>
-          </div>
-        </section>
-        <section id="stats" class="mb-14 last:mb-0">
-          <h2 class="text-[1.375rem] font-semibold mt-0 mb-4 tracking-tight text-gray-900 dark:text-zinc-50">By the numbers</h2>
-          <div id="stats-content" class="flex gap-4 flex-wrap mb-8">
-            <for items={props.Stats} as="s">
-              <StatCard value={s.Value} label={s.Label}></StatCard>
             </for>
           </div>
         </section>
@@ -89,6 +100,7 @@ alertMessage: string
     <footer class="mt-auto py-8 px-6 border-t border-gray-200 dark:border-zinc-800 text-center text-gray-500 dark:text-zinc-500 text-sm bg-gray-50 dark:bg-zinc-950">
       <AppFooter></AppFooter>
     </footer>
+    <AppScript></AppScript>
   </body>
 </html>
 <!-- | end -->

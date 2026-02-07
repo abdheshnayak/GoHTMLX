@@ -60,15 +60,10 @@ func Home() element.Element {
 				ShowCode: true,
 			},
 		},
-		Stats: []t.Stat{
-			{Value: "0", Label: "JS runtime"},
-			{Value: "1", Label: "CLI command"},
-			{Value: "100%", Label: "Go"},
-		},
 		ShowHero:          true,
 		HeroTitle:         "HTML-first server components for Go",
-		HeroSubtitle:      "Write components in HTML, transpile to Go. No JavaScript, no framework lock-in — just server-rendered views that fit any stack.",
-		HeroBadge:         "No JavaScript • Server-only • MIT",
+		HeroSubtitle:      "Write server-side components in HTML, transpile to Go. Modern, type-safe, and framework-agnostic.",
+		HeroBadge:         "Server components • Go • MIT",
 		ShowHeroBadge:     true,
 		ShowCtaPrimary:    true,
 		CtaPrimaryText:    "Get started",
@@ -90,12 +85,12 @@ func ServerTime(timeStr, label string) element.Element {
 	return gc.ServerTime{Time: timeStr, Label: label, Attrs: nil}.Get()
 }
 
-// StatsFragment returns the stats row as a fragment for HTMX (e.g. GET /api/stats).
-func StatsFragment() element.Element {
-	stats := []t.Stat{
-		{Value: "0", Label: "JS runtime"},
-		{Value: "1", Label: "CLI command"},
-		{Value: "100%", Label: "Go"},
-	}
-	return gc.StatsFragment{Stats: stats, Attrs: nil}.Get()
+// FeedbackSuccess returns a success fragment for HTMX form response.
+func FeedbackSuccess(message string) element.Element {
+	return gc.FeedbackSuccess{Message: message, Attrs: nil}.Get()
+}
+
+// FeedbackErrors returns an error fragment for HTMX form response.
+func FeedbackErrors(message string) element.Element {
+	return gc.FeedbackErrors{Message: message, Attrs: nil}.Get()
 }

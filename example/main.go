@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/abdheshnayak/gohtmlx/example/src/comps"
@@ -31,8 +32,15 @@ func main() {
 		_, err := el.Render(c)
 		return err
 	})
-	app.Get("/api/stats", func(c *fiber.Ctx) error {
-		el := comps.StatsFragment()
+	app.Post("/api/feedback", func(c *fiber.Ctx) error {
+		name := strings.TrimSpace(c.FormValue("name"))
+		msg := strings.TrimSpace(c.FormValue("message"))
+		var el element.Element
+		if name == "" || msg == "" {
+			el = comps.FeedbackErrors("Please fill in both name and message.")
+		} else {
+			el = comps.FeedbackSuccess("Thanks, " + name + "! We got your message.")
+		}
 		c.Set("Content-Type", "text/html")
 		_, err := el.Render(c)
 		return err

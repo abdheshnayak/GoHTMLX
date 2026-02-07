@@ -12,16 +12,26 @@ label: string
 <!-- | end -->
 <!-- + end -->
 
-<!-- StatsFragment: fragment for HTMX — stats row only (same as in Home) -->
-<!-- + define "StatsFragment" -->
+<!-- FeedbackSuccess: fragment after successful form submit -->
+<!-- + define "FeedbackSuccess" -->
 <!-- | define "props" -->
-stats: "[]t.Stat"
+message: string
 <!-- | end -->
 <!-- | define "html" -->
-<div class="flex gap-4 flex-wrap">
-  <for items={props.Stats} as="s">
-    <StatCard value={s.Value} label={s.Label}></StatCard>
-  </for>
+<div class="p-4 rounded-lg bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200 text-sm" role="status">
+  {props.Message}
+</div>
+<!-- | end -->
+<!-- + end -->
+
+<!-- FeedbackErrors: fragment when form validation fails -->
+<!-- + define "FeedbackErrors" -->
+<!-- | define "props" -->
+message: string
+<!-- | end -->
+<!-- | define "html" -->
+<div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-sm" role="alert">
+  {props.Message}
 </div>
 <!-- | end -->
 <!-- + end -->

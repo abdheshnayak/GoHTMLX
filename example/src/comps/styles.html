@@ -4,3 +4,24 @@
 <link href="/main.css" rel="stylesheet">
 <!-- | end -->
 <!-- + end -->
+
+<!-- AppScript: loads the app JS (e.g. copyCode) -->
+<!-- + define "AppScript" -->
+<!-- | define "html" -->
+<script>
+    function copyCode(btn) {
+    var pre = btn.closest('.code-block-wrap').querySelector('pre');
+    if (!pre) return;
+        navigator.clipboard.writeText(pre.innerText).then(function () {
+            var t = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.disabled = true;
+            setTimeout(function () {
+            btn.textContent = t;
+            btn.disabled = false;
+            }, 2000);
+        });
+    }
+</script>
+<!-- | end -->
+<!-- + end -->
