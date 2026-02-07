@@ -5,3 +5,9 @@ bin
 node_modules
 *.fiber.gz
 validate
+
+# Local build artifact (go build -o gohtmlx .)
+gohtmlx
+
+# Cursor IDE (local rules/settings, not for main)
+.cursor
