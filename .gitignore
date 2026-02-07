@@ -1,5 +1,6 @@
 example/dist
 testdata/golden/out
+testdata/golden/out_multi
 bin
 node_modules
 *.fiber.gz

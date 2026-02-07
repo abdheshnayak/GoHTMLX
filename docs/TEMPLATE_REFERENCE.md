@@ -42,7 +42,7 @@ Delimiters: `<!-- * ... -->` for global imports, `<!-- + ... -->` for component 
 - **In HTML:** Use `{props.PropName}` for a single expression (e.g. `{props.Title}`). The first letter of the prop name is capitalized in the generated struct.
 - **Multiple expressions in one text:** `{props.Author} — {props.Role}` is supported; each `{...}` is emitted as a separate expression (comma-separated in generated code).
 - **In attributes:** `attr={props.Value}` or `class={props.ClassName}`. The value is a Go expression.
-- **Types:** Use Go type names in the props block. For slice or external types use a string, e.g. `items: "[]pkg.Item"` or `item: "mypkg.Type"`. The generated struct will reference those types; ensure the package is imported via the global imports block.
+- **Types:** Use Go type names in the props block. For slice or external types use a string, e.g. `items: "[]pkg.Item"` or `item: "mypkg.Type"`. The generated struct will reference those types; ensure the package is imported via the global imports block. Invalid types are reported at `go build` time; use `gohtmlx --validate-types` (from module root) to fail at transpile time with file/line.
 
 ---
 
@@ -152,3 +152,25 @@ It reports file:line for:
 - Mismatched closes (e.g. `<!-- | end -->` when the last open block was `<!-- + define -->`).
 
 Exit 0 if all files pass; 1 if any error. Optional in normal workflow; useful in CI or before committing.
+
+---
+
+## Future: alternative format (not yet implemented)
+
+The current syntax uses HTML comments (`<!-- + define "Name" -->`, `<!-- | define "props" -->`, etc.). A possible **alternative format** for better IDE support and fewer comment-related mistakes could look like this:
+
+- **One component per file** (e.g. `Hello.html`).
+- **Frontmatter** at the top: a YAML block between `---` delimiters with `name`, `props` (and optional `imports`), followed by the HTML body.
+
+Example (hypothetical):
+
+```yaml
+---
+name: Hello
+props:
+  name: string
+---
+<div class="greeting"><p>Hello, {props.Name}!</p></div>
+```
+
+**Migration path from current format:** Existing comment-based components can be converted by (1) splitting each `<!-- + define "Name" --> ... <!-- + end -->` block into its own file, (2) turning the `<!-- | define "props" -->` section into YAML frontmatter, and (3) using the `<!-- | define "html" -->` content as the body after the frontmatter. The CLI does not support this format today; it is documented here for future tooling or a follow-up implementation.

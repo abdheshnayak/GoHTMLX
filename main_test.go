@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
@@ -146,6 +147,67 @@ func TestRun_Golden(t *testing.T) {
 				t.Errorf("want ...%q...", want[start:end])
 				break
 			}
+		}
+	}
+}
+
+func TestRun_GoldenPerComponent(t *testing.T) {
+	src := filepath.Join("testdata", "golden")
+	wantDir := filepath.Join("testdata", "golden", "want_per_component")
+	if _, err := os.Stat(src); err != nil {
+		t.Skipf("testdata/golden not found: %v", err)
+	}
+	if _, err := os.Stat(wantDir); err != nil {
+		t.Skipf("golden want_per_component dir not found: %v", err)
+	}
+
+	utils.Log = utils.NewSlogLogger(slog.Default())
+	dist := t.TempDir()
+	if err := transpiler.Run(src, dist, &transpiler.RunOptions{SingleFile: false}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	gotDir := filepath.Join(dist, "gohtmlxc")
+
+	entries, err := os.ReadDir(gotDir)
+	if err != nil {
+		t.Fatalf("read generated dir: %v", err)
+	}
+	var gotFiles []string
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasSuffix(e.Name(), ".go") {
+			gotFiles = append(gotFiles, e.Name())
+		}
+	}
+	sort.Strings(gotFiles)
+
+	for _, name := range gotFiles {
+		gotPath := filepath.Join(gotDir, name)
+		wantPath := filepath.Join(wantDir, name)
+		got, err := os.ReadFile(gotPath)
+		if err != nil {
+			t.Fatalf("read generated %s: %v", name, err)
+		}
+		want, err := os.ReadFile(wantPath)
+		if err != nil {
+			if os.Getenv(updateGoldenEnv) == "1" {
+				if err := os.WriteFile(wantPath, got, 0644); err != nil {
+					t.Fatalf("update golden %s: %v", name, err)
+				}
+				t.Logf("updated golden %s", name)
+				continue
+			}
+			t.Fatalf("read golden %s: %v", name, err)
+		}
+		if string(got) != string(want) {
+			if os.Getenv(updateGoldenEnv) == "1" {
+				if err := os.WriteFile(wantPath, got, 0644); err != nil {
+					t.Fatalf("update golden %s: %v", name, err)
+				}
+				t.Logf("updated golden %s", name)
+				return
+			}
+			t.Errorf("generated %s differs from golden. Run with %s=1 to update golden.", name, updateGoldenEnv)
+			t.Logf("got %d bytes, want %d bytes", len(got), len(want))
 		}
 	}
 }

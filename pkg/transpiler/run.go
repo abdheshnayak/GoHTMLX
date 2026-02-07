@@ -7,8 +7,10 @@ package transpiler
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"text/template"
@@ -27,6 +29,12 @@ type RunOptions struct {
 	SingleFile bool
 	// Pkg is the generated package name (default "gohtmlxc").
 	Pkg string
+	// ValidateTypes runs go build on the generated package after codegen and returns a TranspileError
+	// with file/line when the build fails (e.g. invalid prop types). Run from module root so go build can resolve the package.
+	ValidateTypes bool
+	// Incremental skips transpilation when no .html under src is newer than the generated .go files under dist.
+	// Useful in watch scripts to avoid work when nothing changed. Best-effort; a full run is always correct.
+	Incremental bool
 }
 
 func defaultOptions(opts *RunOptions) RunOptions {
@@ -126,12 +134,123 @@ func componentFileName(name string) string {
 	return s + ".go"
 }
 
+// findModuleRoot walks up from dir until it finds a directory containing go.mod.
+func findModuleRoot(dir string) (string, error) {
+	dir, err := filepath.Abs(dir)
+	if err != nil {
+		return "", err
+	}
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return dir, nil
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", fmt.Errorf("no go.mod found in %s or any parent directory", dir)
+		}
+		dir = parent
+	}
+}
+
+// goBuildErrorRe matches "path/file.go:line:col: message" or "path/file.go:line: message" from go build stderr.
+var goBuildErrorRe = regexp.MustCompile(`([^:]+\.go):(\d+)(?::(\d+))?:\s*(.+)`)
+
+// validateGeneratedPackage runs go build on the generated package and returns a TranspileError on failure.
+func validateGeneratedPackage(outDir, dist, pkg string, componentSource map[string]string, sectionNames []string, singleFile bool) error {
+	wd, err := os.Getwd()
+	if err != nil {
+		return &TranspileError{Message: "validate-types: cannot get working directory: " + err.Error()}
+	}
+	root, err := findModuleRoot(wd)
+	if err != nil {
+		return &TranspileError{Message: "validate-types: " + err.Error() + " (run from module root)"}
+	}
+	outDirAbs, err := filepath.Abs(outDir)
+	if err != nil {
+		return &TranspileError{Message: "validate-types: cannot resolve output path: " + err.Error()}
+	}
+	rel, err := filepath.Rel(root, outDirAbs)
+	if err != nil {
+		return &TranspileError{Message: "validate-types: generated output is outside module: " + err.Error()}
+	}
+	pkgPath := "./" + filepath.ToSlash(rel)
+	cmd := exec.Command("go", "build", "-o", os.DevNull, pkgPath)
+	cmd.Dir = root
+	out, err := cmd.CombinedOutput()
+	if err == nil {
+		return nil
+	}
+	// Parse first error line from stderr (go build prints file:line: message)
+	basenameToComponent := make(map[string]string)
+	if singleFile {
+		basenameToComponent["comp_generated.go"] = ""
+	} else {
+		for _, name := range sectionNames {
+			basenameToComponent[componentFileName(name)] = name
+		}
+	}
+	lines := strings.Split(string(out), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		sub := goBuildErrorRe.FindStringSubmatch(line)
+		if len(sub) < 4 {
+			continue
+		}
+		filePart, lineStr, msg := sub[1], sub[2], sub[len(sub)-1]
+		base := filepath.Base(filePart)
+		component := basenameToComponent[base]
+		var filePath string
+		if component != "" && componentSource[component] != "" {
+			filePath = componentSource[component]
+		} else {
+			filePath = filepath.Join(outDir, base)
+		}
+		var lineNum int
+		fmt.Sscanf(lineStr, "%d", &lineNum)
+		return &TranspileError{
+			Component: component,
+			FilePath:  filePath,
+			Line:      lineNum,
+			Message:   "go build failed: " + msg,
+			Snippet:   strings.TrimSpace(line),
+		}
+	}
+	return &TranspileError{Message: "go build failed", Snippet: string(out)}
+}
+
 // Run transpiles HTML components from src to Go code in dist.
 // It walks src for .html files, parses component sections, merges imports, discovers
 // slots from HTML, generates structs and component code, and writes to dist/<pkg>/*.go
 // (or a single comp_generated.go when opts.SingleFile is true). Uses utils.Log for
 // progress when set. If opts is nil, one file per component is emitted with package "gohtmlxc".
-// Returns a *TranspileError (or wrapped error) on failure with file/line when available.
+//
+// On failure, Run returns an error that is always a *TranspileError (use errors.As to extract it).
+// TranspileError provides FilePath, Line, Message, Snippet, and Component so callers can show
+// file:line and context in UIs or logs.
+// newestModTime returns the newest modification time of files under dir with the given extension (e.g. ".html").
+// Returns zero time if no matching files exist.
+func newestModTime(dir, ext string) (time.Time, error) {
+	var newest time.Time
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		if strings.HasSuffix(strings.ToLower(info.Name()), ext) {
+			if info.ModTime().After(newest) {
+				newest = info.ModTime()
+			}
+		}
+		return nil
+	})
+	return newest, err
+}
+
 func Run(src, dist string, opts *RunOptions) error {
 	opt := defaultOptions(opts)
 	if utils.Log != nil {
@@ -144,9 +263,28 @@ func Run(src, dist string, opts *RunOptions) error {
 		}
 	}(t)
 
+	if opt.Incremental {
+		srcNewest, err := newestModTime(src, ".html")
+		if err != nil {
+			return &TranspileError{FilePath: src, Message: "incremental check: " + err.Error()}
+		}
+		outDir := path.Join(dist, opt.Pkg)
+		distNewest, err := newestModTime(outDir, ".go")
+		if err != nil {
+			// outDir may not exist yet; treat as "no output" and run full transpile
+			distNewest = time.Time{}
+		}
+		if !srcNewest.IsZero() && !distNewest.IsZero() && !srcNewest.After(distNewest) {
+			if utils.Log != nil {
+				utils.Log.Info("incremental skip (no .html changes)")
+			}
+			return nil
+		}
+	}
+
 	files, err := utils.WalkAndReadHTMLFiles(src)
 	if err != nil {
-		return err
+		return &TranspileError{FilePath: src, Message: err.Error()}
 	}
 
 	imports := []string{}
@@ -281,7 +419,7 @@ func Run(src, dist string, opts *RunOptions) error {
 
 	outDir := path.Join(dist, opt.Pkg)
 	if err := os.MkdirAll(outDir, 0755); err != nil {
-		return err
+		return &TranspileError{FilePath: outDir, Message: "failed to create output directory: " + err.Error()}
 	}
 	// Remove existing .go files so we never mix single-file and multi-file output
 	matches, _ := filepath.Glob(filepath.Join(outDir, "*.go"))
@@ -292,32 +430,39 @@ func Run(src, dist string, opts *RunOptions) error {
 	if opt.SingleFile {
 		b, err := gocode.ConstructSourceWithPkg(goCodes, structs, imports, opt.Pkg)
 		if err != nil {
-			return err
+			return &TranspileError{Message: "codegen: " + err.Error()}
 		}
 		outPath := path.Join(outDir, "comp_generated.go")
 		if err := os.WriteFile(outPath, []byte(b), 0644); err != nil {
-			return err
+			return &TranspileError{FilePath: outPath, Message: err.Error()}
 		}
-		return nil
+		if !opt.ValidateTypes {
+			return nil
+		}
+	} else {
+		// One file per component; each file gets package + only the imports it uses (so no "imported and not used")
+		for _, name := range sectionNames {
+			codeStr, ok := goCodes[name]
+			if !ok {
+				continue
+			}
+			structStr := structMap[name]
+			usedImports := importsUsedInComponent(imports, structStr, codeStr)
+			compContent, err := gocode.ConstructComponentFile(opt.Pkg, usedImports, name, structStr, codeStr)
+			if err != nil {
+				return &TranspileError{Component: name, FilePath: componentSource[name], Message: "codegen: " + err.Error()}
+			}
+			filename := componentFileName(name)
+			if err := os.WriteFile(path.Join(outDir, filename), []byte(compContent), 0644); err != nil {
+				return &TranspileError{FilePath: path.Join(outDir, filename), Message: err.Error()}
+			}
+		}
 	}
 
-	// One file per component; each file gets package + only the imports it uses (so no "imported and not used")
-	for _, name := range sectionNames {
-		codeStr, ok := goCodes[name]
-		if !ok {
-			continue
-		}
-		structStr := structMap[name]
-		usedImports := importsUsedInComponent(imports, structStr, codeStr)
-		compContent, err := gocode.ConstructComponentFile(opt.Pkg, usedImports, name, structStr, codeStr)
-		if err != nil {
-			return err
-		}
-		filename := componentFileName(name)
-		if err := os.WriteFile(path.Join(outDir, filename), []byte(compContent), 0644); err != nil {
+	if opt.ValidateTypes {
+		if err := validateGeneratedPackage(outDir, dist, opt.Pkg, componentSource, sectionNames, opt.SingleFile); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }

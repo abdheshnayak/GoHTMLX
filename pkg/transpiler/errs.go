@@ -5,14 +5,20 @@ import (
 	"strings"
 )
 
-// TranspileError is returned when transpilation fails. It includes source location
-// so the caller can show file:line and optional snippet.
+// TranspileError is returned when transpilation fails. Use it so the caller can show
+// file:line and an optional snippet. Use errors.As(err, &te) to detect and inspect it.
+//
+//   - FilePath: source .html file or generated .go file path, when available.
+//   - Line: approximate line in that file (e.g. component start); 0 if unknown.
+//   - Message: short error description.
+//   - Snippet: optional context lines around the error.
+//   - Component: component name when the error is tied to a specific component.
 type TranspileError struct {
 	Component string // component name, if applicable
-	FilePath  string
-	Line      int
+	FilePath  string // source or generated file path
+	Line      int    // line number, or 0 if unknown
 	Message   string
-	Snippet   string
+	Snippet   string // optional context lines
 }
 
 func (e *TranspileError) Error() string {

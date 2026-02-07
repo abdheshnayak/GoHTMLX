@@ -22,7 +22,7 @@ Use this checklist when deploying GoHTMLX in production or in CI.
 
 ## Types and validation
 
-- [ ] **Prop types:** Props are declared as “name: type” in the template. Invalid types surface at `go build` of the generated package. For stricter checks, consider a future `--validate-types` (see [PLAN_PRODUCTION_GRADE.md](PLAN_PRODUCTION_GRADE.md) Phase 4.3).
+- [ ] **Prop types:** Props are declared as “name: type” in the template. Invalid types surface at `go build` of the generated package. Use `--validate-types` in CI to fail fast with file/line (run from module root); see [PLAN_PRODUCTION_GRADE.md](PLAN_PRODUCTION_GRADE.md) Phase 4.3.
 - [ ] **Imports:** Use the global `<!-- * define "imports" -->` block for packages required by prop types (e.g. `t "yourmod/types"`). Imports are merged and deduplicated across files.
 
 ---
@@ -36,7 +36,7 @@ Use this checklist when deploying GoHTMLX in production or in CI.
 
 ## Security and dependencies
 
-- [ ] **Minimal deps:** Core has no Fiber/fwatcher; optional integrations live in `pkg/integration` or the example. Keep `go.mod` minimal.
+- [ ] **Minimal deps:** Core has no Fiber/fwatcher; optional integrations live in `pkg/integration` or the example. Keep `go.mod` minimal. See README “Dependencies” for framework-agnostic core and when Fiber is used.
 - [ ] **No secrets:** Do not put credentials or secrets in templates or generated code. Generated code may import your packages; ensure those packages do not expose secrets.
 - [ ] **Vulnerability checks:** Run `go mod tidy` and (if available) `govulncheck` or Dependabot in CI.
 

@@ -39,8 +39,9 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 0
+          VERSION: ${{ github.ref_name }}
         run: |
-          go build -ldflags="-s -w" -o gohtmlx${{ matrix.goos == 'windows' && '.exe' || '' }} .
+          go build -ldflags="-s -w -X main.Version=${VERSION}" -o gohtmlx${{ matrix.goos == 'windows' && '.exe' || '' }} .
           mkdir -p artifact
           mv gohtmlx* artifact/
 

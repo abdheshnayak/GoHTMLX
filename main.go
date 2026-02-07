@@ -11,16 +11,27 @@ import (
 	"github.com/abdheshnayak/gohtmlx/pkg/validate"
 )
 
+// Version is set at build time via -ldflags="-X main.Version=...". Empty when built without ldflags.
+var Version string
+
 func main() {
 	if len(os.Args) >= 2 && (os.Args[1] == "validate" || os.Args[1] == "check") {
 		runValidate(os.Args[2:])
 		return
+	}
+	if len(os.Args) >= 2 && (os.Args[1] == "-version" || os.Args[1] == "--version" || os.Args[1] == "version") {
+		if Version == "" {
+			Version = "dev"
+		}
+		fmt.Println(Version)
+		os.Exit(0)
 	}
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of gohtmlx:\n")
 		fmt.Fprintf(os.Stderr, "  gohtmlx --src=DIR --dist=DIR     transpile .html components to Go\n")
 		fmt.Fprintf(os.Stderr, "  gohtmlx validate --src=DIR       check comment structure (unclosed define/end)\n")
+		fmt.Fprintf(os.Stderr, "  gohtmlx --version                print version and exit\n")
 		fmt.Fprintf(os.Stderr, "\n")
 		flag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\nExit codes:\n")
@@ -33,6 +44,8 @@ func main() {
 	dist := flag.String("dist", "", "destination directory for generated Go code")
 	singleFile := flag.Bool("single-file", false, "emit one comp_generated.go (legacy); default is one file per component")
 	pkg := flag.String("pkg", "gohtmlxc", "generated package name")
+	validateTypes := flag.Bool("validate-types", false, "after codegen, run go build on the generated package and fail with file/line on error (run from module root)")
+	incremental := flag.Bool("incremental", false, "skip transpilation if no .html file is newer than generated .go files (for watch scripts)")
 	flag.Parse()
 
 	if *src == "" || *dist == "" {
@@ -41,7 +54,7 @@ func main() {
 	}
 
 	utils.Log = utils.NewSlogLogger(slog.Default())
-	opts := &transpiler.RunOptions{SingleFile: *singleFile, Pkg: *pkg}
+	opts := &transpiler.RunOptions{SingleFile: *singleFile, Pkg: *pkg, ValidateTypes: *validateTypes, Incremental: *incremental}
 	if err := transpiler.Run(*src, *dist, opts); err != nil {
 		utils.Log.Error("transpiling failed", "err", err)
 		os.Exit(1)
